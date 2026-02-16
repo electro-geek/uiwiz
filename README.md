@@ -1,9 +1,3 @@
-Since you are using an AI agent (like "Antigravity") to build this, you need a **Product Requirements Document (PRD)** that is extremely specific about the tech stack, the data flow, and the "Sandbox" constraints.
-
-Copy and paste the following into your agent to kickstart the build.
-
----
-
 # Project Specification: "Lumina" – AI-Powered UI Generator
 
 ## 1. Overview
@@ -77,9 +71,3 @@ The agent must configure the Gemini API with the following persistent instructio
 5. **[ ] Phase 5:** Add "Refinement" logic (sending current code + new prompt = updated code).
 
 ---
-
-### How to use this with your agent:
-
-**Prompt to Antigravity:** *"I have provided a PRD for a project called 'Lumina'. Please review the tech stack and the Sandbox requirements. Start by scaffolding the Next.js project and setting up the Gemini API route. Once that's done, let's build the Sandpack preview component."*
-
-**Would you like me to generate the specific TypeScript interface for the Gemini API call to ensure your agent handles the 'Vision' and 'Chat' modes correctly?**
