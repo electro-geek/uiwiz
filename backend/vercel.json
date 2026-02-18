@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "lumina_backend/wsgi.py",
+            "src": "index.py",
             "use": "@vercel/python",
             "config": {
                 "maxLambdaSize": "15mb",
@@ -13,7 +13,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "lumina_backend/wsgi.py"
+            "dest": "index.py"
         }
     ]
 }

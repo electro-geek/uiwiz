@@ -125,12 +125,12 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
 # Default primary key field type
-if MONGO_URL:
+if config.get('mongodb.url'):
     DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
     SILENCED_SYSTEM_CHECKS = ["mongodb.E001"]
 else:
