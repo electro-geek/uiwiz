@@ -25,7 +25,7 @@ if [ -d "venv" ]; then
     ./venv/bin/python manage.py runserver 8001 &
 else
     # Fallback to system python3
-    python3 manage.py runserver 8001 &
+    python3 manage.py runserver 8000 &
 fi
 BACKEND_PID=$!
 cd ..
