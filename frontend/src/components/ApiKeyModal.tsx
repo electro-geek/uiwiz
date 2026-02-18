@@ -1,152 +1,153 @@
 import { useState, useEffect } from 'react';
 import { X, Key, Shield, AlertCircle, Save, Trash2, CheckCircle } from 'lucide-react';
 import { getProfile, updateProfile } from '../lib/api';
+import ConfirmModal from './ConfirmModal';
 
 interface ApiKeyModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSuccess?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
 }
 
 export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalProps) {
-    const [apiKey, setApiKey] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | null }>({
-        message: '',
-        type: null,
-    });
+  const [apiKey, setApiKey] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | null }>({
+    message: '',
+    type: null,
+  });
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-    useEffect(() => {
-        if (isOpen) {
-            loadApiKey();
-        }
-    }, [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      loadApiKey();
+    }
+  }, [isOpen]);
 
-    const loadApiKey = async () => {
-        setIsLoading(true);
-        try {
-            const profile = await getProfile();
-            if (profile.gemini_api_key) {
-                setApiKey(profile.gemini_api_key);
-            }
-        } catch (err) {
-            console.error('Failed to load API key', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const loadApiKey = async () => {
+    setIsLoading(true);
+    try {
+      const profile = await getProfile();
+      if (profile.gemini_api_key) {
+        setApiKey(profile.gemini_api_key);
+      }
+    } catch (err) {
+      console.error('Failed to load API key', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const handleSave = async () => {
-        if (!apiKey.trim()) {
-            setStatus({ message: 'Please enter an API key', type: 'error' });
-            return;
-        }
+  const handleSave = async () => {
+    if (!apiKey.trim()) {
+      setStatus({ message: 'Please enter an API key', type: 'error' });
+      return;
+    }
 
-        setIsLoading(true);
-        setStatus({ message: '', type: null });
-        try {
-            await updateProfile({ gemini_api_key: apiKey });
-            setStatus({ message: 'API key saved successfully!', type: 'success' });
-            if (onSuccess) onSuccess();
-            setTimeout(onClose, 1500);
-        } catch (err) {
-            setStatus({ message: 'Failed to save API key', type: 'error' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    setIsLoading(true);
+    setStatus({ message: '', type: null });
+    try {
+      await updateProfile({ gemini_api_key: apiKey });
+      setStatus({ message: 'API key saved successfully!', type: 'success' });
+      if (onSuccess) onSuccess();
+      setTimeout(onClose, 1500);
+    } catch (err) {
+      setStatus({ message: 'Failed to save API key', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete your API key?')) return;
+  const handleDelete = async () => {
+    setIsLoading(true);
+    setIsConfirmOpen(false);
+    try {
+      await updateProfile({ gemini_api_key: null });
+      setApiKey('');
+      setStatus({ message: 'API key deleted', type: 'success' });
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      setStatus({ message: 'Failed to delete API key', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setIsLoading(true);
-        try {
-            await updateProfile({ gemini_api_key: null });
-            setApiKey('');
-            setStatus({ message: 'API key deleted', type: 'success' });
-            if (onSuccess) onSuccess();
-        } catch (err) {
-            setStatus({ message: 'Failed to delete API key', type: 'error' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  if (!isOpen) return null;
 
-    if (!isOpen) return null;
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content api-key-modal">
+        <div className="modal-header">
+          <div className="header-title">
+            <Key className="header-icon" />
+            <h2>Gemini API Configuration</h2>
+          </div>
+          <button onClick={onClose} className="close-button">
+            <X size={20} />
+          </button>
+        </div>
 
-    return (
-        <div className="modal-overlay">
-            <div className="modal-content api-key-modal">
-                <div className="modal-header">
-                    <div className="header-title">
-                        <Key className="header-icon" />
-                        <h2>Gemini API Configuration</h2>
-                    </div>
-                    <button onClick={onClose} className="close-button">
-                        <X size={20} />
-                    </button>
-                </div>
+        <div className="modal-body">
+          <p className="description">
+            To use UIWiz, you need to provide your own Google Gemini API key.
+            Your key is stored securely and used only for your requests.
+          </p>
 
-                <div className="modal-body">
-                    <p className="description">
-                        To use Lumina, you need to provide your own Google Gemini API key.
-                        Your key is stored securely and used only for your requests.
-                    </p>
+          <div className="info-box">
+            <Shield size={16} />
+            <span>Don't have a key? Get one for free at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.</span>
+          </div>
 
-                    <div className="info-box">
-                        <Shield size={16} />
-                        <span>Don't have a key? Get one for free at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.</span>
-                    </div>
-
-                    <div className="input-group">
-                        <label htmlFor="apiKey">Gemini API Key</label>
-                        <div className="input-wrapper">
-                            <input
-                                id="apiKey"
-                                type="password"
-                                value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
-                                placeholder="Enter your API key here..."
-                                disabled={isLoading}
-                            />
-                        </div>
-                    </div>
-
-                    {status.type && (
-                        <div className={`status-message ${status.type}`}>
-                            {status.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                            <span>{status.message}</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="modal-footer">
-                    <button
-                        onClick={handleDelete}
-                        className="delete-button"
-                        disabled={isLoading || !apiKey}
-                        title="Delete API key"
-                    >
-                        <Trash2 size={18} />
-                    </button>
-
-                    <div className="footer-actions">
-                        <button onClick={onClose} className="secondary-button" disabled={isLoading}>
-                            Cancel
-                        </button>
-                        <button onClick={handleSave} className="primary-button" disabled={isLoading}>
-                            {isLoading ? 'Saving...' : (
-                                <>
-                                    <Save size={18} />
-                                    Save Key
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </div>
+          <div className="input-group">
+            <label htmlFor="apiKey">Gemini API Key</label>
+            <div className="input-wrapper">
+              <input
+                id="apiKey"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your API key here..."
+                disabled={isLoading}
+              />
             </div>
+          </div>
 
-            <style>{`
+          {status.type && (
+            <div className={`status-message ${status.type}`}>
+              {status.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+              <span>{status.message}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button
+            onClick={() => setIsConfirmOpen(true)}
+            className="delete-button"
+            disabled={isLoading || !apiKey}
+            title="Delete API key"
+          >
+            <Trash2 size={18} />
+          </button>
+
+          <div className="footer-actions">
+            <button onClick={onClose} className="secondary-button" disabled={isLoading}>
+              Cancel
+            </button>
+            <button onClick={handleSave} className="primary-button" disabled={isLoading}>
+              {isLoading ? 'Saving...' : (
+                <>
+                  <Save size={18} />
+                  Save Key
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -363,6 +364,15 @@ export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalP
           to { opacity: 1; }
         }
       `}</style>
-        </div>
-    );
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        title="Delete API Key"
+        message="Are you sure you want to delete your Gemini API key? This will prevent UIWiz from generating new code until a new key is provided."
+        confirmLabel="Delete Key"
+        isDanger={true}
+        onConfirm={handleDelete}
+        onCancel={() => setIsConfirmOpen(false)}
+      />
+    </div>
+  );
 }

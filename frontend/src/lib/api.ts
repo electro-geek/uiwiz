@@ -52,6 +52,8 @@ export interface ChatSession {
 
 export interface UserProfile {
   gemini_api_key: string | null;
+  username?: string;
+  email?: string;
 }
 
 export const login = async (username: string, password: string) => {
@@ -84,6 +86,10 @@ export const createSession = async (): Promise<ChatSession> => {
 export const getSessionDetail = async (id: number): Promise<ChatSession> => {
   const response = await api.get(`/sessions/${id}/`);
   return response.data;
+};
+
+export const deleteSession = async (id: number): Promise<void> => {
+  await api.delete(`/sessions/${id}/`);
 };
 
 export const getProfile = async (): Promise<UserProfile> => {

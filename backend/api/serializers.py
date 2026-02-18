@@ -3,9 +3,12 @@ from django.contrib.auth.models import User
 from .models import ChatSession, ChatMessage, CodeVersion, UserProfile
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+    email = serializers.ReadOnlyField(source='user.email')
+    
     class Meta:
         model = UserProfile
-        fields = ('gemini_api_key',)
+        fields = ('gemini_api_key', 'username', 'email')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

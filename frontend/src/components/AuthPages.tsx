@@ -34,7 +34,7 @@ export const LoginPage: React.FC<AuthProps> = ({ onSuccess }) => {
                         <Sparkles size={32} color="white" />
                     </div>
                     <h2 className="welcome-title">Welcome Back</h2>
-                    <p className="welcome-subtitle">Sign in to continue building with Lumina</p>
+                    <p className="welcome-subtitle">Sign in to continue building with UIWiz</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="auth-form">
@@ -111,7 +111,7 @@ export const SignupPage: React.FC<AuthProps> = ({ onSuccess }) => {
                     <div className="welcome-icon">
                         <Sparkles size={32} color="white" />
                     </div>
-                    <h2 className="welcome-title">Join Lumina</h2>
+                    <h2 className="welcome-title">Join UIWiz</h2>
                     <p className="welcome-subtitle">Start generating beautiful UIs today</p>
                 </div>
 

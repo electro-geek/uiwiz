@@ -1,6 +1,6 @@
-# Lumina — AI-Powered UI Generator (Frontend)
+# UIWiz — AI-Powered UI Generator (Frontend)
 
-Lumina is a world-class AI interface generator that allows users to create high-fidelity React components using Google Gemini AI. This repository contains the modern React frontend, built with Vite, TypeScript, and Tailwind CSS.
+UIWiz is a world-class AI interface generator that allows users to create high-fidelity React components using Google Gemini AI. This repository contains the modern React frontend, built with Vite, TypeScript, and Tailwind CSS.
 
 ## ✨ Key Features
 
@@ -45,7 +45,7 @@ The app will be available at `http://localhost:5173`.
 
 ## ⚙️ Configuration (Gemini API)
 
-Lumina requires a **Gemini API Key** to function. 
+UIWiz requires a **Gemini API Key** to function.
 1. Open the app and log in.
 2. Click on the **Settings** button in the bottom-left corner of the sidebar.
 3. Paste your Gemini API key (get one for free at [Google AI Studio](https://aistudio.google.com/app/apikey)).
@@ -59,4 +59,4 @@ Lumina requires a **Gemini API Key** to function.
 - **Styling**: Global styles and utility tokens are in `src/index.css`.
 
 ---
-Built with ❤️ by the Lumina Team.
+Built with ❤️ by the UIWiz Team.

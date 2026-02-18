@@ -1,5 +1,5 @@
 """
-API Views for Lumina - AI-Powered UI Generator.
+API Views for UIWiz - AI-Powered UI Generator.
 Handles code generation via Gemini API with streaming support and automatic failover.
 """
 import json
@@ -83,31 +83,48 @@ Your goal is to output **strictly** executable React code using Tailwind CSS tha
 
 1. **Complete Application**: Don't just build a component; build a complete page or mini-app with a consistent theme. Include headers, footers, sidebars, and main content areas where appropriate.
 2. **Strict Output**: Only return the code; no markdown backticks, no explanations. No "Here is the code...". Just start with imports.
-3. **Architecture**: Assume all components are exported as `default`. Use modern React patterns (functional components, hooks).
-4. **Visual Excellence**:
+3. **Architecture**: Generate a production-ready, multi-file project structure (React + Vite). 
+4. **Multi-file Output**: Output **ONLY** a strictly valid JSON object. Do not wrap it in markdown backticks in your raw output (though the UI might handle them). 
+   - Keys MUST be file paths starting with `/` (e.g., `/App.tsx`, `/components/Header.tsx`).
+   - Values MUST be raw string content of the files.
+   - **CRITICAL**: Do not use markdown code blocks (```) inside the JSON values.
+   - You **MUST** include a `/App.tsx` which imports and uses the other components.
+5. **No Conversational Text**: Do not include any text before or after the JSON. No "Sure, here is your app...". Just the JSON.
+6. **Visual Excellence**:
    - Use `lucide-react` for all icons.
    - Use `framer-motion` for sophisticated animations and transitions.
-   - Use `clsx` and `tailwind-merge` for class management.
-   - Create visually stunning, high-fidelity UIs with polished typography (Inter), spacing, and shadows.
-5. **Logic**: All logic must be self-contained in one file. If you need multiple components, define them within the same file.
-6. **No Markdown Blocks**: NEVER use markdown code blocks (```jsx). Just output raw JSX/React code strings.
-7. **Replication**: If the user provides an image, replicate the layout, color scheme, and aesthetic exactly, but enhance it to feel like a modern, premium web app.
-8. **Interactivity**: Add hover states, active states, and subtle micro-interactions to make the app feel alive."""
+   - Use `clsx` and `tailwind-merge` for class management (cn utility).
+   - Use `recharts` for any data visualization.
+   - Use `react-router-dom` for multi-page apps.
+   - Use `lucide-react`, `framer-motion`, `clsx`, `tailwind-merge`, `recharts`, `date-fns`, `react-router-dom`, `re-resizable`, `axios`.
+7. **Replication**: If the user provides an image, replicate it perfectly using this multi-file structure.
+8. **Mobile First**: All components must be fully responsive using Tailwind (`sm:`, `md:`, `lg:`).
+9. **Modern Stack**: Assume a standard Vite + React + Tailwind + TypeScript environment.
+"""
 
 
 def clean_code_response(text: str) -> str:
-    """Extract code from potential conversational text or markdown blocks."""
+    """Extract code/JSON from potential conversational text or markdown blocks."""
     cleaned = text.strip()
     
-    # Try to find a markdown code block
-    match = re.search(r'```(?:jsx|javascript|tsx|js|react)?\s*\n?(.*?)(?:```|$)', cleaned, re.DOTALL | re.IGNORECASE)
+    # Try to find a markdown block (json or generic)
+    match = re.search(r'```(?:json|jsx|javascript|tsx|ts|typescript|js|react)?\s*\n?(.*?)(?:```|$)', cleaned, re.DOTALL | re.IGNORECASE)
     if match:
-        return match.group(1).strip()
+        content = match.group(1).strip()
+        # If it's valid JSON, return it
+        try:
+            json.loads(content)
+            return content
+        except:
+            pass
+        return content
     
-    # If no markdown block, try to find the first import
-    import_match = re.search(r'import\s+.*?;', cleaned, re.DOTALL)
-    if import_match:
-        return cleaned[import_match.start():].strip()
+    # If no markdown block, check if the whole text is JSON
+    try:
+        json.loads(cleaned)
+        return cleaned
+    except:
+        pass
         
     return cleaned
 
@@ -129,9 +146,40 @@ class HealthCheckView(APIView):
 
         return Response({
             'status': 'healthy',
-            'service': 'Lumina Backend',
+            'service': 'UIWiz Backend',
             'gemini_configured': gemini_configured,
         })
+
+
+def generate_chat_title(api_key, first_prompt):
+    """Generate a concise, 3-5 word title for the chat using Gemini."""
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Use a more structured prompt to avoid issues with special characters in user input
+        ai_prompt = (
+            "You are a helpful assistant. Your task is to generate a very short, concise, and catchy "
+            "title for a new web development project based on the user's initial prompt.\n\n"
+            "User's request: \"\"\"" + first_prompt[:1000] + "\"\"\"\n\n"
+            "Generate a title (max 4-5 words). Do not use any quotes, backticks, or special characters. "
+            "Just return the title text itself."
+        )
+        
+        response = model.generate_content(ai_prompt)
+        title = response.text.strip()
+        
+        # Thorough cleaning of the generated title
+        title = re.sub(r'["\'`*_#]', '', title)
+        title = title.split('\n')[0].strip() # Take only the first line
+        
+        if not title or len(title) < 2:
+            return first_prompt[:50] + ('...' if len(first_prompt) > 50 else '')
+            
+        return title[:100]
+    except Exception as e:
+        print(f"Error generating chat title: {str(e)}")
+        return first_prompt[:50] + ('...' if len(first_prompt) > 50 else '')
 
 
 class GenerateCodeView(APIView):
@@ -143,6 +191,7 @@ class GenerateCodeView(APIView):
     - Iterative refinement (previous code context)
     - Streaming responses via SSE
     - Automatic failover/retry on rate limits (429)
+    - AI-generated session titles
     """
 
     def post(self, request):
@@ -159,7 +208,7 @@ class GenerateCodeView(APIView):
             )
 
         if not session_id:
-             return Response(
+            return Response(
                 {'error': 'Session ID is required for persistence'},
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -175,11 +224,6 @@ class GenerateCodeView(APIView):
         # Save user message
         ChatMessage.objects.create(session=session, role='user', content=prompt)
         
-        # update session title if it's new
-        if session.title == 'New Chat':
-            session.title = prompt[:50] + ('...' if len(prompt) > 50 else '')
-            session.save()
-
         # Get API key from user profile
         try:
             profile = request.user.profile
@@ -192,6 +236,11 @@ class GenerateCodeView(APIView):
                 {'error': 'Gemini API key not found. Please provide your own API key in settings.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # update session title if it's new
+        if session.title == 'New Chat':
+            session.title = generate_chat_title(api_key, prompt)
+            session.save()
 
         # Configure Gemini
         genai.configure(api_key=api_key)

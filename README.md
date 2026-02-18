@@ -1,8 +1,18 @@
-# Project Specification: "Lumina" – AI-Powered UI Generator
+# Project Specification: "UIWiz" – AI-Powered UI Generator
+
+## 🚀 Quick Start
+
+To start both the frontend and backend services with a single command:
+
+```bash
+./start.sh
+```
+
+---
 
 ## 1. Overview
 
-Lumina is a web application that allows users to generate, preview, and iterate on React components in real-time using the **Gemini API**. It mimics the "Lovable" or "v0" workflow: Prompt → Code Generation → Instant Rendering.
+UIWiz is a web application that allows users to generate, preview, and iterate on React components in real-time using the **Gemini API**. It mimics the "Lovable" or "v0" workflow: Prompt → Code Generation → Instant Rendering.
 
 ## 2. Core Tech Stack
 

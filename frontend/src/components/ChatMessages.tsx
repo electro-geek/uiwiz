@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { Sparkles, User, CheckCircle } from 'lucide-react';
+import { Sparkles, User, CheckCircle, Wand2 } from 'lucide-react';
 import type { ChatMessage } from '../types';
 
 interface ChatMessagesProps {
@@ -8,12 +8,7 @@ interface ChatMessagesProps {
     onSuggestionClick: (prompt: string) => void;
 }
 
-const SUGGESTIONS = [
-    '🎨 A modern pricing page with 3 tiers and a toggle for monthly/yearly billing',
-    '📊 A dashboard with charts, stats cards, and a sidebar navigation',
-    '🔐 A beautiful login form with social auth buttons and animations',
-    '🛒 An e-commerce product card grid with filters and cart button',
-];
+
 
 export default function ChatMessages({ messages, isGenerating, onSuggestionClick }: ChatMessagesProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -24,23 +19,74 @@ export default function ChatMessages({ messages, isGenerating, onSuggestionClick
 
     if (messages.length === 0 && !isGenerating) {
         return (
-            <div className="chat-messages">
-                <div className="welcome-screen">
-                    <div className="welcome-icon">
-                        <Sparkles size={32} color="white" />
+            <div className="chat-messages" style={{ padding: '0 40px' }}>
+                <div className="welcome-screen" style={{ alignItems: 'flex-start', textAlign: 'left', padding: '60px 0' }}>
+                    <div className="welcome-icon animate-magic" style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '16px',
+                        background: 'var(--accent-gradient)',
+                        marginBottom: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <Wand2 size={28} color="white" />
                     </div>
-                    <h2 className="welcome-title">What would you like to build?</h2>
-                    <p className="welcome-subtitle">
+                    <h2 className="welcome-title" style={{ fontSize: '32px', fontWeight: 800, marginBottom: '12px' }}>
+                        What would you like to <br />build?
+                    </h2>
+                    <p className="welcome-subtitle" style={{ fontSize: '15px', color: '#666', marginBottom: '40px', maxWidth: '100%' }}>
                         Describe any UI component and I'll generate it instantly with React & Tailwind CSS.
                     </p>
-                    <div className="welcome-suggestions">
-                        {SUGGESTIONS.map((suggestion, i) => (
+
+                    <div className="welcome-suggestions" style={{ gap: '12px', maxWidth: '100%' }}>
+                        {[
+                            {
+                                title: 'Modern SaaS Landing',
+                                desc: 'Hero section, features, and pricing table.',
+                                icon: '🖥️'
+                            },
+                            {
+                                title: 'Analytics Dashboard',
+                                desc: 'Sidebar navigation with complex charts.',
+                                icon: '📊'
+                            },
+                            {
+                                title: 'AI Chat Interface',
+                                desc: 'Sidebar with message history and input.',
+                                icon: '⚡'
+                            }
+                        ].map((s, i) => (
                             <button
                                 key={i}
                                 className="suggestion-btn"
-                                onClick={() => onSuggestionClick(suggestion)}
+                                onClick={() => onSuggestionClick(s.title)}
+                                style={{
+                                    display: 'flex',
+                                    gap: '16px',
+                                    padding: '16px',
+                                    background: '#111',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    alignItems: 'center'
+                                }}
                             >
-                                {suggestion}
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '10px',
+                                    background: '#1a1a1a',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '18px'
+                                }}>
+                                    {s.icon}
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: 600, color: 'white', marginBottom: '2px' }}>{s.title}</div>
+                                    <div style={{ fontSize: '12px', color: '#444' }}>{s.desc}</div>
+                                </div>
                             </button>
                         ))}
                     </div>
@@ -57,7 +103,7 @@ export default function ChatMessages({ messages, isGenerating, onSuggestionClick
                         {msg.role === 'user' ? <User size={16} /> : <Sparkles size={16} />}
                     </div>
                     <div className="message-body">
-                        <div className="message-role">{msg.role === 'user' ? 'You' : 'Lumina'}</div>
+                        <div className="message-role">{msg.role === 'user' ? 'You' : 'UIWiz'}</div>
                         <div className={`message-content ${msg.role}`}>
                             {msg.content}
                         </div>
@@ -74,10 +120,10 @@ export default function ChatMessages({ messages, isGenerating, onSuggestionClick
             {isGenerating && (
                 <div className="message">
                     <div className="message-avatar assistant">
-                        <Sparkles size={16} />
+                        <Wand2 size={16} color="white" />
                     </div>
                     <div className="message-body">
-                        <div className="message-role">Lumina</div>
+                        <div className="message-role">UIWiz</div>
                         <div className="loading-dots">
                             <span />
                             <span />

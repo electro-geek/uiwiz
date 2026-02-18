@@ -8,22 +8,25 @@ import CodeView from './components/CodeView';
 import StatusBar from './components/StatusBar';
 import { LoginPage, SignupPage } from './components/AuthPages';
 import ApiKeyModal from './components/ApiKeyModal';
+import ConfirmModal from './components/ConfirmModal';
 import {
   generateCodeStream,
   checkHealth,
   getSessions,
   createSession,
   getSessionDetail,
+  getProfile,
+  deleteSession as apiDeleteSession,
   logout as apiLogout
 } from './lib/api';
 import type { Version, ChatMessage, ViewMode, DeviceMode } from './types';
-import type { ChatSession } from './lib/api';
+import type { ChatSession, UserProfile } from './lib/api';
 
 function cleanCodeResponse(text: string): string {
   let cleaned = text.trim();
 
   // Handle markdown blocks (supports partial streaming)
-  const codeBlockRegex = /```(?:jsx|javascript|tsx|js|react)?\s*\n?/i;
+  const codeBlockRegex = /```(?:json|jsx|javascript|tsx|js|react)?\s*\n?/i;
   const match = cleaned.match(codeBlockRegex);
 
   if (match) {
@@ -36,11 +39,21 @@ function cleanCodeResponse(text: string): string {
       cleaned = cleaned.substring(0, closingIndex);
     }
   } else {
-    // If no markdown block yet, try to find the first import if there's conversational text
+    // If no markdown block yet, try to find the first import or a JSON object start
     const importIndex = cleaned.indexOf('import ');
-    if (importIndex > 0) {
-      cleaned = cleaned.substring(importIndex);
+    const jsonIndex = cleaned.indexOf('{');
+
+    const firstIndex = [importIndex, jsonIndex].filter(i => i >= 0).sort((a, b) => a - b)[0];
+
+    if (firstIndex !== undefined && firstIndex > 0) {
+      cleaned = cleaned.substring(firstIndex);
     }
+  }
+
+  // If we ended up with nothing but the input had content, return the input
+  // This helps during early streaming
+  if (!cleaned && text.trim()) {
+    return text.trim();
   }
 
   return cleaned.trim();
@@ -55,7 +68,6 @@ export default function App() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [versions, setVersions] = useState<Version[]>([]);
-  const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentCode, setCurrentCode] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -63,8 +75,13 @@ export default function App() {
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const [copied, setCopied] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; sessionId: number | null }>({
+    isOpen: false,
+    sessionId: null
+  });
   const codeAccumulatorRef = useRef('');
 
   // Authentication check on mount
@@ -80,12 +97,22 @@ export default function App() {
       .catch(() => setIsConnected(false));
   }, []);
 
-  // Load sessions when authenticated
+  // Load sessions and profile when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       loadSessions();
+      loadProfile();
     }
   }, [isAuthenticated]);
+
+  const loadProfile = async () => {
+    try {
+      const profile = await getProfile();
+      setUser(profile);
+    } catch (err) {
+      console.error('Failed to load profile', err);
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -105,6 +132,10 @@ export default function App() {
     try {
       const data = await getSessionDetail(id);
       setCurrentSession(data);
+
+      // Update the sessions list with the newly fetched data (to reflect title changes)
+      setSessions(prev => prev.map(s => s.id === data.id ? { ...s, title: data.title } : s));
+
       setViewMode('preview');
 
       // Transform backend messages to frontend format
@@ -127,10 +158,8 @@ export default function App() {
 
       if (transformedVersions.length > 0) {
         const lastVersion = transformedVersions[transformedVersions.length - 1];
-        setActiveVersionId(lastVersion.id);
         setCurrentCode(lastVersion.code);
       } else {
-        setActiveVersionId(null);
         setCurrentCode(null);
       }
     } catch (err) {
@@ -146,7 +175,6 @@ export default function App() {
       setMessages([]);
       setVersions([]);
       setCurrentCode(null);
-      setActiveVersionId(null);
     } catch (err) {
       showToast('Failed to create new session', 'error');
     }
@@ -157,6 +185,32 @@ export default function App() {
     setIsAuthenticated(false);
     setCurrentSession(null);
     setSessions([]);
+  };
+
+  const handleDeleteSession = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteConfirm({ isOpen: true, sessionId: id });
+  };
+
+  const confirmDeleteSession = async () => {
+    const id = deleteConfirm.sessionId;
+    if (id === null) return;
+
+    try {
+      await apiDeleteSession(id);
+      setSessions(prev => prev.filter(s => s.id !== id));
+      if (currentSession?.id === id) {
+        setMessages([]);
+        setVersions([]);
+        setCurrentCode(null);
+        setCurrentSession(null);
+      }
+      showToast('Chat deleted successfully', 'success');
+    } catch (err) {
+      showToast('Failed to delete chat', 'error');
+    } finally {
+      setDeleteConfirm({ isOpen: false, sessionId: null });
+    }
   };
 
   // Toast handling
@@ -244,21 +298,14 @@ export default function App() {
   return (
     <div className="app-container">
       <Sidebar
-        versions={versions}
-        activeVersionId={activeVersionId}
-        onSelectVersion={(id) => {
-          const version = versions.find(v => v.id === id);
-          if (version) {
-            setActiveVersionId(id);
-            setCurrentCode(version.code);
-          }
-        }}
         onNewChat={handleNewChat}
         sessions={sessions}
         currentSessionId={currentSession?.id}
         onSelectSession={handleSelectSession}
+        onDeleteSession={handleDeleteSession}
         onLogout={handleLogout}
         onSettingsClick={() => setIsApiKeyModalOpen(true)}
+        user={user}
       />
 
       <div className="main-content">
@@ -317,6 +364,16 @@ export default function App() {
             .then((res) => setIsConnected(res.gemini_configured))
             .catch(() => setIsConnected(false));
         }}
+      />
+
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Chat"
+        message="Are you sure you want to delete this chat? This action cannot be undone."
+        confirmLabel="Delete"
+        isDanger={true}
+        onConfirm={confirmDeleteSession}
+        onCancel={() => setDeleteConfirm({ isOpen: false, sessionId: null })}
       />
     </div>
   );

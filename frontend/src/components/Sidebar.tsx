@@ -1,30 +1,30 @@
-import { Plus, Clock, Sparkles, Zap, MessageSquare, LogOut, Settings } from 'lucide-react';
-import type { Version } from '../types';
-import type { ChatSession } from '../lib/api';
+import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2 } from 'lucide-react';
+import type { ChatSession, UserProfile } from '../lib/api';
 
 interface SidebarProps {
-    versions: Version[];
-    activeVersionId: string | null;
-    onSelectVersion: (id: string) => void;
     onNewChat: () => void;
     sessions: ChatSession[];
     currentSessionId?: number;
     onSelectSession: (id: number) => void;
+    onDeleteSession: (id: number, e: React.MouseEvent) => void;
     onLogout: () => void;
     onSettingsClick: () => void;
+    user: UserProfile | null;
 }
 
 export default function Sidebar({
-    versions,
-    activeVersionId,
-    onSelectVersion,
     onNewChat,
     sessions,
     currentSessionId,
     onSelectSession,
+    onDeleteSession,
     onLogout,
-    onSettingsClick
+    onSettingsClick,
+    user
 }: SidebarProps) {
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    };
     const formatTime = (date: Date) => {
         const now = new Date();
         const diff = now.getTime() - date.getTime();
@@ -39,79 +39,113 @@ export default function Sidebar({
 
     return (
         <aside className="sidebar">
-            <div className="sidebar-header">
-                <div className="sidebar-logo">
-                    <Sparkles size={20} />
+            <div className="sidebar-header" style={{ borderBottom: 'none' }}>
+                <div className="sidebar-logo animate-magic" style={{
+                    borderRadius: '10px',
+                    background: 'var(--accent-gradient)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '32px',
+                    height: '32px'
+                }}>
+                    <Wand2 size={18} color="white" />
                 </div>
-                <span className="sidebar-title">Lumina</span>
+                <span className="sidebar-title" style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>UIWiz</span>
             </div>
 
-            <button className="sidebar-new-chat" onClick={onNewChat}>
-                <Plus size={16} />
-                New Generation
+            <button className="sidebar-new-chat" onClick={onNewChat} style={{ margin: '0 16px 16px' }}>
+                <Plus size={16} strokeWidth={3} />
+                New Chat
             </button>
 
             <div className="sidebar-versions">
-                <div className="sidebar-section-title">
-                    <MessageSquare size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
-                    Recent Chats
+                <div className="sidebar-section-title" style={{ fontSize: '10px', color: '#555', marginBottom: '8px' }}>
+                    RECENT CHATS
                 </div>
-                <div style={{ marginBottom: 16 }}>
+                <div style={{ marginBottom: 24 }}>
                     {sessions.map((session) => (
                         <div
                             key={session.id}
                             className={`version-item ${session.id === currentSessionId ? 'active' : ''}`}
                             onClick={() => onSelectSession(session.id)}
+                            style={{ padding: '12px', marginBottom: '4px' }}
                         >
-                            <div className="version-item-title">{session.title}</div>
-                            <div className="version-item-time">{formatTime(new Date(session.updated_at))}</div>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%', position: 'relative' }}>
+                                <div style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    background: session.id === currentSessionId ? 'var(--accent-secondary)' : '#1a1a1a',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                }}>
+                                    <MessageSquare size={14} color={session.id === currentSessionId ? 'white' : '#666'} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div className="version-item-title" style={{
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}>{session.title}</div>
+                                    <div className="version-item-time" style={{ fontSize: '11px', color: '#444' }}>{formatTime(new Date(session.updated_at))}</div>
+                                </div>
+                                <button
+                                    className="delete-session-btn"
+                                    onClick={(e) => onDeleteSession(session.id, e)}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: '#444',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        opacity: session.id === currentSessionId ? 1 : 0,
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
-
-                {versions.length > 0 && (
-                    <>
-                        <div className="sidebar-section-title">
-                            <Clock size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
-                            Version History
-                        </div>
-                        {versions.map((version) => (
-                            <div
-                                key={version.id}
-                                className={`version-item ${version.id === activeVersionId ? 'active' : ''}`}
-                                onClick={() => onSelectVersion(version.id)}
-                            >
-                                <div className="version-item-title">{version.prompt}</div>
-                                <div className="version-item-time">{formatTime(version.timestamp)}</div>
-                            </div>
-                        ))}
-                    </>
-                )}
             </div>
 
-            <div className="sidebar-footer" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Zap size={14} color="var(--accent-primary)" />
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Gemini 2.0</span>
+            <div className="sidebar-footer" style={{
+                padding: '16px',
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                marginTop: 'auto'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                    <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        background: 'var(--accent-gradient)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '12px'
+                    }}>
+                        {user?.username ? getInitials(user.username) : '??'}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <button
-                            onClick={onSettingsClick}
-                            className="chat-action-btn"
-                            style={{ width: 'auto', padding: '4px 8px', fontSize: 11, gap: 4 }}
-                        >
-                            <Settings size={12} />
-                            Settings
-                        </button>
-                        <button
-                            onClick={onLogout}
-                            className="chat-action-btn"
-                            style={{ width: 'auto', padding: '4px 8px', fontSize: 11, gap: 4 }}
-                        >
-                            <LogOut size={12} />
-                            Logout
-                        </button>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {user?.username || 'Guest'}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#555' }}>Pro Plan</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <Settings size={16} color="#444" style={{ cursor: 'pointer' }} onClick={onSettingsClick} />
+                        <LogOut size={16} color="#444" style={{ cursor: 'pointer' }} onClick={onLogout} />
                     </div>
                 </div>
             </div>

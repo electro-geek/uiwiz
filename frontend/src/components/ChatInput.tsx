@@ -78,7 +78,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
                             <ImagePlus size={18} />
                         </button>
                         <button
-                            className="chat-send-btn"
+                            className={`chat-send-btn ${text.trim() ? 'has-text' : ''}`}
                             onClick={handleSend}
                             disabled={disabled || !text.trim()}
                             title="Send"
