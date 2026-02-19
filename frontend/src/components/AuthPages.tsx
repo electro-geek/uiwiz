@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, Wand2, Zap, Code, Eye } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Wand2, Code, Eye } from 'lucide-react';
 import { login, register, googleLogin } from '../lib/api';
 import { signInWithGoogle } from '../lib/firebase';
 
