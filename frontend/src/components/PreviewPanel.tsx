@@ -4,7 +4,7 @@ import {
     SandpackLayout,
 } from '@codesandbox/sandpack-react';
 import { motion } from 'framer-motion';
-import { Layout, MessageSquare, Code, MousePointer, Layers, Clock, Wand2 } from 'lucide-react';
+import { Layout, MessageSquare, Code, MousePointer, Layers, Wand2 } from 'lucide-react';
 import type { DeviceMode } from '../types';
 
 interface PreviewPanelProps {
@@ -207,26 +207,6 @@ const SplashContent = () => {
                 </div>
             </motion.div>
 
-            {/* Bottom Button Badge */}
-            <div style={{
-                position: 'absolute',
-                bottom: '40px',
-                padding: '8px 20px',
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: '99px',
-                border: '1px solid rgba(255,255,255,0.08)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#666',
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-            }}>
-                <Clock size={14} />
-                VIEW VERSIONS
-            </div>
         </div>
     );
 };

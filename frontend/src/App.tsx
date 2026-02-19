@@ -9,6 +9,7 @@ import StatusBar from './components/StatusBar';
 import { LoginPage, SignupPage } from './components/AuthPages';
 import ApiKeyModal from './components/ApiKeyModal';
 import ConfirmModal from './components/ConfirmModal';
+import CreatorPopup from './components/CreatorPopup';
 import {
   generateCodeStream,
   checkHealth,
@@ -78,10 +79,13 @@ export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [apiKeyAlertMode, setApiKeyAlertMode] = useState(false);
+  const [isRateLimitModalOpen, setIsRateLimitModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; sessionId: number | null }>({
     isOpen: false,
     sessionId: null
   });
+  const [isCreatorPopupOpen, setIsCreatorPopupOpen] = useState(false);
   const codeAccumulatorRef = useRef('');
 
   // Authentication check on mount
@@ -102,6 +106,13 @@ export default function App() {
     if (isAuthenticated) {
       loadSessions();
       loadProfile();
+
+      // Show creator popup once per session if not already shown
+      const sessionSeen = sessionStorage.getItem('session_seen_creator');
+      if (!sessionSeen) {
+        setTimeout(() => setIsCreatorPopupOpen(true), 1200);
+        sessionStorage.setItem('session_seen_creator', 'true');
+      }
     }
   }, [isAuthenticated]);
 
@@ -109,6 +120,7 @@ export default function App() {
     try {
       const profile = await getProfile();
       setUser(profile);
+      setIsConnected(!!profile.gemini_api_key);
     } catch (err) {
       console.error('Failed to load profile', err);
     }
@@ -229,6 +241,13 @@ export default function App() {
     async (prompt: string, image?: string) => {
       if (!currentSession) return;
 
+      // Check if API key is missing
+      if (!user?.gemini_api_key) {
+        setApiKeyAlertMode(true);
+        setIsApiKeyModalOpen(true);
+        return;
+      }
+
       // Add user message locally for instant feedback
       const userMsg: ChatMessage = {
         id: generateId(),
@@ -260,10 +279,14 @@ export default function App() {
             setIsGenerating(false);
           },
           (error) => {
-            showToast(error, 'error');
             setIsGenerating(false);
-            if (error.toLowerCase().includes('api key')) {
+            if (error.toLowerCase().includes('limit') || error.includes('429')) {
+              setIsRateLimitModalOpen(true);
+            } else if (error.toLowerCase().includes('api key') || error.includes('401')) {
+              setApiKeyAlertMode(true);
               setIsApiKeyModalOpen(true);
+            } else {
+              showToast(error, 'error');
             }
           }
         );
@@ -290,9 +313,25 @@ export default function App() {
 
   if (!isAuthenticated) {
     if (path === '/signup') {
-      return <SignupPage onSuccess={() => { setIsAuthenticated(true); window.history.pushState({}, '', '/'); }} />;
+      return (
+        <SignupPage
+          onSuccess={() => {
+            setIsAuthenticated(true);
+            setIsCreatorPopupOpen(true);
+            window.history.pushState({}, '', '/');
+          }}
+        />
+      );
     }
-    return <LoginPage onSuccess={() => { setIsAuthenticated(true); window.history.pushState({}, '', '/'); }} />;
+    return (
+      <LoginPage
+        onSuccess={() => {
+          setIsAuthenticated(true);
+          setIsCreatorPopupOpen(true);
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
   }
 
   return (
@@ -304,7 +343,10 @@ export default function App() {
         onSelectSession={handleSelectSession}
         onDeleteSession={handleDeleteSession}
         onLogout={handleLogout}
-        onSettingsClick={() => setIsApiKeyModalOpen(true)}
+        onSettingsClick={() => {
+          setApiKeyAlertMode(false);
+          setIsApiKeyModalOpen(true);
+        }}
         user={user}
       />
 
@@ -325,6 +367,7 @@ export default function App() {
               messages={messages}
               isGenerating={isGenerating}
               onSuggestionClick={(p) => handleSend(p)}
+              user={user}
             />
             <ChatInput onSend={handleSend} disabled={isGenerating} />
           </div>
@@ -345,7 +388,6 @@ export default function App() {
         <StatusBar
           isGenerating={isGenerating}
           isConnected={isConnected}
-          versionCount={versions.length}
           currentCode={currentCode}
         />
       </div>
@@ -358,11 +400,41 @@ export default function App() {
 
       <ApiKeyModal
         isOpen={isApiKeyModalOpen}
-        onClose={() => setIsApiKeyModalOpen(false)}
+        alertMode={apiKeyAlertMode}
+        onClose={() => {
+          setIsApiKeyModalOpen(false);
+          setApiKeyAlertMode(false);
+        }}
         onSuccess={() => {
+          setApiKeyAlertMode(false);
           checkHealth()
             .then((res) => setIsConnected(res.gemini_configured))
             .catch(() => setIsConnected(false));
+          loadProfile(); // Refresh profile to get the new key
+        }}
+      />
+
+      <ConfirmModal
+        isOpen={isRateLimitModalOpen}
+        title="Rate Limit Exceeded"
+        message="Your Gemini API key has reached its usage limit or the service is overloaded. Please try again in a few minutes or provide a different API key in settings."
+        confirmLabel="Close"
+        onConfirm={() => setIsRateLimitModalOpen(false)}
+        onCancel={() => setIsRateLimitModalOpen(false)}
+        isDanger={true}
+      />
+
+      <CreatorPopup
+        isOpen={isCreatorPopupOpen}
+        onClose={() => {
+          setIsCreatorPopupOpen(false);
+          // Chain to API key modal if they don't have one yet
+          if (!user?.gemini_api_key) {
+            setTimeout(() => {
+              setApiKeyAlertMode(true);
+              setIsApiKeyModalOpen(true);
+            }, 300);
+          }
         }}
       />
 

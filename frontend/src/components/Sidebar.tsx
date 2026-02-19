@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2 } from 'lucide-react';
+import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2, Github } from 'lucide-react';
 import type { ChatSession, UserProfile } from '../lib/api';
 
 interface SidebarProps {
@@ -133,9 +133,19 @@ export default function Sidebar({
                         justifyContent: 'center',
                         color: 'white',
                         fontWeight: 700,
-                        fontSize: '12px'
+                        fontSize: '12px',
+                        overflow: 'hidden'
                     }}>
-                        {user?.username ? getInitials(user.username) : '??'}
+                        {user?.avatar_url ? (
+                            <img
+                                src={user.avatar_url}
+                                alt={user.username || 'User'}
+                                referrerPolicy="no-referrer"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        ) : (
+                            user?.username ? getInitials(user.username) : '??'
+                        )}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

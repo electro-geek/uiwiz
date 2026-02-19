@@ -1,16 +1,16 @@
 import { useRef, useEffect } from 'react';
 import { Sparkles, User, CheckCircle, Wand2 } from 'lucide-react';
 import type { ChatMessage } from '../types';
+import type { UserProfile } from '../lib/api';
 
 interface ChatMessagesProps {
     messages: ChatMessage[];
     isGenerating: boolean;
     onSuggestionClick: (prompt: string) => void;
+    user: UserProfile | null;
 }
 
-
-
-export default function ChatMessages({ messages, isGenerating, onSuggestionClick }: ChatMessagesProps) {
+export default function ChatMessages({ messages, isGenerating, onSuggestionClick, user }: ChatMessagesProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -99,8 +99,21 @@ export default function ChatMessages({ messages, isGenerating, onSuggestionClick
         <div className="chat-messages">
             {messages.map((msg) => (
                 <div key={msg.id} className="message">
-                    <div className={`message-avatar ${msg.role}`}>
-                        {msg.role === 'user' ? <User size={16} /> : <Sparkles size={16} />}
+                    <div className={`message-avatar ${msg.role}`} style={{ overflow: 'hidden' }}>
+                        {msg.role === 'user' ? (
+                            user?.avatar_url ? (
+                                <img
+                                    src={user.avatar_url}
+                                    alt="You"
+                                    referrerPolicy="no-referrer"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                            ) : (
+                                <User size={16} />
+                            )
+                        ) : (
+                            <Sparkles size={16} />
+                        )}
                     </div>
                     <div className="message-body">
                         <div className="message-role">{msg.role === 'user' ? 'You' : 'UIWiz'}</div>

@@ -1,4 +1,4 @@
-import { Eye, Code, Monitor, Tablet, Smartphone, Copy, Check, RefreshCw } from 'lucide-react';
+import { Eye, Code, Monitor, Tablet, Smartphone, Copy, Check, Github } from 'lucide-react';
 import type { ViewMode, DeviceMode } from '../types';
 
 interface TopBarProps {
@@ -77,6 +77,17 @@ export default function TopBar({
                         {copied ? <Check size={15} /> : <Copy size={15} />}
                     </button>
                 )}
+
+                <a
+                    href="https://github.com/electro-geek/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="icon-btn"
+                    title="Follow @electro-geek on GitHub"
+                    style={{ textDecoration: 'none' }}
+                >
+                    <Github size={15} />
+                </a>
             </div>
         </div>
     );

@@ -7,11 +7,13 @@ interface ApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  alertMode?: boolean;
 }
 
-export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalProps) {
+export default function ApiKeyModal({ isOpen, onClose, onSuccess, alertMode }: ApiKeyModalProps) {
   const [apiKey, setApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | null }>({
     message: '',
     type: null,
@@ -27,9 +29,10 @@ export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalP
   const loadApiKey = async () => {
     setIsLoading(true);
     try {
-      const profile = await getProfile();
-      if (profile.gemini_api_key) {
-        setApiKey(profile.gemini_api_key);
+      const profileData = await getProfile();
+      setProfile(profileData);
+      if (profileData.gemini_api_key) {
+        setApiKey(profileData.gemini_api_key);
       }
     } catch (err) {
       console.error('Failed to load API key', err);
@@ -77,18 +80,50 @@ export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalP
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content api-key-modal">
-        <div className="modal-header">
-          <div className="header-title">
-            <Key className="header-icon" />
-            <h2>Gemini API Configuration</h2>
+      <div className="modal-content api-key-modal" style={{ maxWidth: '440px' }}>
+        <div className="modal-header" style={{ position: 'relative', padding: '24px 24px 12px' }}>
+          <div className="header-title" style={{ gap: '16px' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: alertMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {alertMode ? <AlertCircle size={20} color="#ef4444" /> : <Key size={20} color="#3b82f6" />}
+            </div>
+            <div>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'white', margin: 0 }}>
+                {alertMode ? 'API Key Required' : 'Gemini API Configuration'}
+              </h2>
+              {alertMode && <p style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>A valid Gemini API key is required to generate code.</p>}
+            </div>
           </div>
-          <button onClick={onClose} className="close-button">
+          <button onClick={onClose} className="close-button" style={{ position: 'absolute', top: '16px', right: '16px' }}>
             <X size={20} />
           </button>
         </div>
 
         <div className="modal-body">
+          {profile && (
+            <div className="user-profile-summary">
+              <div className="summary-avatar">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt={profile.username} referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="summary-initials">{profile.username?.[0].toUpperCase()}</div>
+                )}
+              </div>
+              <div className="summary-info">
+                <h3>{profile.username}</h3>
+                <span>{profile.email}</span>
+              </div>
+            </div>
+          )}
+
           <p className="description">
             To use UIWiz, you need to provide your own Google Gemini API key.
             Your key is stored securely and used only for your requests.
@@ -215,6 +250,50 @@ export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalP
 
         .modal-body {
           padding: 20px;
+        }
+
+        .user-profile-summary {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 24px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #333;
+        }
+
+        .summary-avatar {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: var(--accent-gradient);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .summary-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .summary-initials {
+          font-size: 20px;
+          font-weight: 700;
+          color: white;
+        }
+
+        .summary-info h3 {
+          margin: 0;
+          font-size: 1rem;
+          font-weight: 600;
+          color: white;
+        }
+
+        .summary-info span {
+          font-size: 0.85rem;
+          color: #9ca3af;
         }
 
         .description {
@@ -373,6 +452,6 @@ export default function ApiKeyModal({ isOpen, onClose, onSuccess }: ApiKeyModalP
         onConfirm={handleDelete}
         onCancel={() => setIsConfirmOpen(false)}
       />
-    </div>
+    </div >
   );
 }

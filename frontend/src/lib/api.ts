@@ -54,10 +54,18 @@ export interface UserProfile {
   gemini_api_key: string | null;
   username?: string;
   email?: string;
+  avatar_url?: string | null;
 }
 
 export const login = async (username: string, password: string) => {
   const response = await api.post('/login/', { username, password });
+  localStorage.setItem('access_token', response.data.access);
+  localStorage.setItem('refresh_token', response.data.refresh);
+  return response.data;
+};
+
+export const googleLogin = async (idToken: string) => {
+  const response = await api.post('/google-login/', { id_token: idToken });
   localStorage.setItem('access_token', response.data.access);
   localStorage.setItem('refresh_token', response.data.refresh);
   return response.data;
