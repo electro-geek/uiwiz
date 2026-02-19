@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2, Github } from 'lucide-react';
+import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2 } from 'lucide-react';
 import type { ChatSession, UserProfile } from '../lib/api';
 
 interface SidebarProps {

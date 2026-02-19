@@ -20,7 +20,7 @@ import {
   deleteSession as apiDeleteSession,
   logout as apiLogout
 } from './lib/api';
-import type { Version, ChatMessage, ViewMode, DeviceMode } from './types';
+import type { ChatMessage, ViewMode, DeviceMode } from './types';
 import type { ChatSession, UserProfile } from './lib/api';
 
 function cleanCodeResponse(text: string): string {
@@ -68,7 +68,6 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
-  const [versions, setVersions] = useState<Version[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentCode, setCurrentCode] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -159,17 +158,8 @@ export default function App() {
       }));
       setMessages(transformedMessages);
 
-      // Transform versions
-      const transformedVersions: Version[] = data.versions.map(v => ({
-        id: v.id.toString(),
-        code: v.code,
-        prompt: v.prompt,
-        timestamp: new Date(v.timestamp)
-      }));
-      setVersions(transformedVersions);
-
-      if (transformedVersions.length > 0) {
-        const lastVersion = transformedVersions[transformedVersions.length - 1];
+      if (data.versions && data.versions.length > 0) {
+        const lastVersion = data.versions[data.versions.length - 1];
         setCurrentCode(lastVersion.code);
       } else {
         setCurrentCode(null);
@@ -185,7 +175,6 @@ export default function App() {
       setSessions(prev => [newSess, ...prev]);
       setCurrentSession(newSess);
       setMessages([]);
-      setVersions([]);
       setCurrentCode(null);
     } catch (err) {
       showToast('Failed to create new session', 'error');
@@ -213,7 +202,6 @@ export default function App() {
       setSessions(prev => prev.filter(s => s.id !== id));
       if (currentSession?.id === id) {
         setMessages([]);
-        setVersions([]);
         setCurrentCode(null);
         setCurrentSession(null);
       }
