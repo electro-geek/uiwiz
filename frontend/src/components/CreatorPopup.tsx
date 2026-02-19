@@ -27,7 +27,7 @@ const CreatorPopup: React.FC<CreatorPopupProps> = ({ isOpen, onClose }) => {
                         width: '100%',
                         textAlign: 'center'
                     }}>
-                        <Github className="header-icon" size={24} color="#7c3aed" />
+                        <Github className="header-icon" size={24} color="#e0e0e0" />
                         <h2 style={{ fontSize: '1.3rem', margin: 0, fontWeight: 800, color: 'white' }}>Meet the Creator</h2>
                     </div>
                 </div>
@@ -55,16 +55,20 @@ const CreatorPopup: React.FC<CreatorPopupProps> = ({ isOpen, onClose }) => {
                             style={{
                                 width: '100%',
                                 textDecoration: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
                                 justifyContent: 'center',
+                                gap: '8px',
                                 padding: '12px',
                                 fontSize: '14px',
                                 borderRadius: '8px',
-                                background: 'var(--accent-gradient)',
-                                border: 'none',
-                                color: 'white',
-                                fontWeight: 600
+                                background: 'linear-gradient(145deg, #2a2a2a, #fff)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                color: '#0a0a0a',
+                                fontWeight: 700
                             }}
                         >
+                            <Github size={18} />
                             Visit GitHub Profile
                         </a>
                         <button
@@ -120,8 +124,8 @@ const CreatorPopup: React.FC<CreatorPopupProps> = ({ isOpen, onClose }) => {
                     margin: 0 auto 20px;
                     border-radius: 50%;
                     padding: 3px;
-                    background: var(--accent-gradient);
-                    box-shadow: 0 0 30px rgba(124, 58, 237, 0.4);
+                    background: linear-gradient(145deg, #2a2a2a, #fff);
+                    box-shadow: 0 0 24px rgba(255, 255, 255, 0.08);
                 }
 
                 .creator-img {

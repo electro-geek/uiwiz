@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { Sparkles, User, CheckCircle, Wand2 } from 'lucide-react';
+import { User, CheckCircle, Wand2 } from 'lucide-react';
 import type { ChatMessage } from '../types';
 import type { UserProfile } from '../lib/api';
 
@@ -31,7 +31,7 @@ export default function ChatMessages({ messages, isGenerating, onSuggestionClick
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <Wand2 size={28} color="white" />
+                        <Wand2 size={28} color="#0a0a0a" strokeWidth={2} />
                     </div>
                     <h2 className="welcome-title" style={{ fontSize: '32px', fontWeight: 800, marginBottom: '12px' }}>
                         What would you like to <br />build?
@@ -112,7 +112,7 @@ export default function ChatMessages({ messages, isGenerating, onSuggestionClick
                                 <User size={16} />
                             )
                         ) : (
-                            <Sparkles size={16} />
+                            <Wand2 size={16} color="white" />
                         )}
                     </div>
                     <div className="message-body">

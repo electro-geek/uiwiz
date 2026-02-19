@@ -49,7 +49,7 @@ export default function Sidebar({
                     width: '32px',
                     height: '32px'
                 }}>
-                    <Wand2 size={18} color="white" />
+                    <Wand2 size={18} color="#0a0a0a" strokeWidth={2} />
                 </div>
                 <span className="sidebar-title" style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>UIWiz</span>
             </div>

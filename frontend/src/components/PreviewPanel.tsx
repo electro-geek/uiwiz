@@ -27,33 +27,21 @@ const DEFAULT_CODE = `export default function App() {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Background Glow */}
-      <div style={{
-        position: 'absolute',
-        width: '400px',
-        height: '400px',
-        background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%)',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none'
-      }} />
-
       <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center' }}>
           <div style={{ 
             width: '80px', 
             height: '80px', 
-            background: 'linear-gradient(135deg, #7c3aed, #a855f7)', 
+            background: 'linear-gradient(145deg, #2a2a2a, #fff)', 
             borderRadius: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 40px rgba(124, 58, 237, 0.4)',
-            animation: 'wand-pulse 3s ease-in-out infinite'
+            boxShadow: '0 0 40px rgba(255,255,255,0.06)'
           }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 3L20 12L6 21V3Z" fill="white" />
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2" strokeLinecap="round">
+              <path d="M6 18 L18 6" />
+              <circle cx="18" cy="6" r="2.5" fill="#0a0a0a" />
             </svg>
           </div>
         </div>
@@ -165,15 +153,15 @@ const SplashContent = () => {
                         style={{
                             width: '80px',
                             height: '80px',
-                            background: 'var(--accent-gradient)',
+                            background: 'linear-gradient(145deg, #2a2a2a, #fff)',
                             borderRadius: '24px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 0 50px rgba(124, 58, 237, 0.3)',
+                            boxShadow: '0 0 40px rgba(255,255,255,0.08)',
                         }}
                     >
-                        <Wand2 size={40} color="white" />
+                        <Wand2 size={40} color="#0a0a0a" strokeWidth={2} />
                     </motion.div>
                 </div>
 
@@ -188,7 +176,7 @@ const SplashContent = () => {
                     justifyContent: 'center',
                     gap: '12px'
                 }}>
-                    <Wand2 size={24} color="#f59e0b" />
+                    <Wand2 size={24} color="white" />
                     UIWiz
                 </h2>
                 <p style={{ fontSize: '18px', color: '#555', fontWeight: 500 }}>
