@@ -283,7 +283,7 @@ export default function App() {
         showToast(error.message || 'Error generating code', 'error');
       }
     },
-    [currentSession, currentCode]
+    [currentSession, currentCode, user]
   );
 
   const handleCopy = useCallback(() => {
