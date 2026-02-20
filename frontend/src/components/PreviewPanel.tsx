@@ -288,6 +288,17 @@ export default function PreviewPanel({ code, deviceMode, isGenerating }: Preview
                             'prop-types': 'latest',
                             'tailwind-merge': 'latest',
                             'axios': 'latest',
+                            'class-variance-authority': 'latest',
+                            '@radix-ui/react-slot': 'latest',
+                            '@radix-ui/react-avatar': 'latest',
+                            '@radix-ui/react-dialog': 'latest',
+                            '@radix-ui/react-dropdown-menu': 'latest',
+                            '@radix-ui/react-label': 'latest',
+                            '@radix-ui/react-separator': 'latest',
+                            '@radix-ui/react-tooltip': 'latest',
+                            '@radix-ui/react-switch': 'latest',
+                            '@radix-ui/react-checkbox': 'latest',
+                            '@radix-ui/react-tabs': 'latest',
                         },
                     }}
                     options={{
