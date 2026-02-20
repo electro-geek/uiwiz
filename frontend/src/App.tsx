@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { MessageSquare, Eye } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import ChatMessages from './components/ChatMessages';
@@ -85,6 +86,8 @@ export default function App() {
     sessionId: null
   });
   const [isCreatorPopupOpen, setIsCreatorPopupOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState<'chat' | 'preview'>('chat');
   const codeAccumulatorRef = useRef('');
 
   // Authentication check on mount
@@ -324,11 +327,25 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Mobile sidebar overlay backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <Sidebar
-        onNewChat={handleNewChat}
+        onNewChat={() => {
+          handleNewChat();
+          setIsSidebarOpen(false);
+        }}
         sessions={sessions}
         currentSessionId={currentSession?.id}
-        onSelectSession={handleSelectSession}
+        onSelectSession={(id) => {
+          handleSelectSession(id);
+          setIsSidebarOpen(false);
+        }}
         onDeleteSession={handleDeleteSession}
         onLogout={handleLogout}
         onSettingsClick={() => {
@@ -336,6 +353,8 @@ export default function App() {
           setIsApiKeyModalOpen(true);
         }}
         user={user}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <div className="main-content">
@@ -347,10 +366,29 @@ export default function App() {
           onCopy={handleCopy}
           copied={copied}
           hasCode={!!currentCode}
+          onMenuClick={() => setIsSidebarOpen(true)}
         />
 
+        {/* Mobile panel switcher tabs */}
+        <div className="mobile-panel-tabs">
+          <button
+            className={`mobile-panel-tab ${mobilePanel === 'chat' ? 'active' : ''}`}
+            onClick={() => setMobilePanel('chat')}
+          >
+            <MessageSquare size={14} />
+            Chat
+          </button>
+          <button
+            className={`mobile-panel-tab ${mobilePanel === 'preview' ? 'active' : ''}`}
+            onClick={() => setMobilePanel('preview')}
+          >
+            <Eye size={14} />
+            Preview
+          </button>
+        </div>
+
         <div className="split-container">
-          <div className="chat-panel">
+          <div className={`chat-panel ${mobilePanel === 'chat' ? 'mobile-active' : 'mobile-hidden'}`}>
             <ChatMessages
               messages={messages}
               isGenerating={isGenerating}
@@ -360,7 +398,7 @@ export default function App() {
             <ChatInput onSend={handleSend} disabled={isGenerating} />
           </div>
 
-          <div className="preview-panel">
+          <div className={`preview-panel ${mobilePanel === 'preview' ? 'mobile-active' : 'mobile-hidden'}`}>
             {viewMode === 'preview' ? (
               <PreviewPanel
                 code={currentCode}

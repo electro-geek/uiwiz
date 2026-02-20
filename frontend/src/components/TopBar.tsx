@@ -1,4 +1,4 @@
-import { Eye, Code, Monitor, Tablet, Smartphone, Copy, Check, Github } from 'lucide-react';
+import { Eye, Code, Monitor, Tablet, Smartphone, Copy, Check, Github, Menu } from 'lucide-react';
 import type { ViewMode, DeviceMode } from '../types';
 
 interface TopBarProps {
@@ -9,6 +9,7 @@ interface TopBarProps {
     onCopy: () => void;
     copied: boolean;
     hasCode: boolean;
+    onMenuClick?: () => void;
 }
 
 export default function TopBar({
@@ -19,10 +20,20 @@ export default function TopBar({
     onCopy,
     copied,
     hasCode,
+    onMenuClick,
 }: TopBarProps) {
     return (
         <div className="top-bar">
             <div className="top-bar-left">
+                {onMenuClick && (
+                    <button
+                        className="icon-btn mobile-menu-btn"
+                        onClick={onMenuClick}
+                        aria-label="Open menu"
+                    >
+                        <Menu size={18} />
+                    </button>
+                )}
                 <div className="top-bar-tabs">
                     <button
                         className={`top-bar-tab ${viewMode === 'preview' ? 'active' : ''}`}

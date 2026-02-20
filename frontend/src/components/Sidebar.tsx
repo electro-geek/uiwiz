@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2 } from 'lucide-react';
+import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2, X } from 'lucide-react';
 import type { ChatSession, UserProfile } from '../lib/api';
 
 interface SidebarProps {
@@ -10,6 +10,8 @@ interface SidebarProps {
     onLogout: () => void;
     onSettingsClick: () => void;
     user: UserProfile | null;
+    isOpen?: boolean;
+    onClose?: () => void;
 }
 
 export default function Sidebar({
@@ -20,7 +22,9 @@ export default function Sidebar({
     onDeleteSession,
     onLogout,
     onSettingsClick,
-    user
+    user,
+    isOpen,
+    onClose
 }: SidebarProps) {
     const getInitials = (name: string) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
@@ -38,7 +42,7 @@ export default function Sidebar({
     };
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header" style={{ borderBottom: 'none' }}>
                 <div className="sidebar-logo animate-magic" style={{
                     borderRadius: '10px',
@@ -51,7 +55,16 @@ export default function Sidebar({
                 }}>
                     <Wand2 size={18} color="#0a0a0a" strokeWidth={2} />
                 </div>
-                <span className="sidebar-title" style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>UIWiz</span>
+                <span className="sidebar-title" style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'white', flex: 1 }}>UIWiz</span>
+                {onClose && (
+                    <button
+                        className="sidebar-close-btn"
+                        onClick={onClose}
+                        aria-label="Close sidebar"
+                    >
+                        <X size={20} />
+                    </button>
+                )}
             </div>
 
             <button className="sidebar-new-chat" onClick={onNewChat} style={{ margin: '0 16px 16px' }}>
@@ -159,6 +172,6 @@ export default function Sidebar({
                     </div>
                 </div>
             </div>
-        </aside>
+        </aside >
     );
 }

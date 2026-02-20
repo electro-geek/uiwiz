@@ -64,7 +64,6 @@ html,
 body,
 #root {
   height: 100%;
-  overflow: hidden;
 }
 
 body {
@@ -1035,16 +1034,325 @@ body {
   }
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* ==================== RESPONSIVE UTILITIES ==================== */
+
+/* Mobile menu button: hidden by default, shown on mobile */
+.mobile-menu-btn {
+  display: none !important;
+}
+
+/* Sidebar close button: hidden by default, shown on mobile */
+.sidebar-close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.sidebar-close-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* Mobile sidebar backdrop */
+.sidebar-backdrop {
+  display: none;
+}
+
+/* Mobile panel tabs: hidden by default */
+.mobile-panel-tabs {
+  display: none;
+}
+
+/* ==================== RESPONSIVE — TABLET & BELOW (≤1024px) ==================== */
 
 @media (max-width: 1024px) {
-  .sidebar {
-    display: none;
+
+  /* Show hamburger menu button */
+  .mobile-menu-btn {
+    display: flex !important;
   }
 
+  /* Sidebar becomes a slide-in overlay */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Show close button inside sidebar */
+  .sidebar-close-btn {
+    display: flex;
+  }
+
+  /* Backdrop for sidebar */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Shrink chat panel */
   .chat-panel {
     width: 340px;
     min-width: 300px;
+  }
+}
+
+/* ==================== RESPONSIVE — SMALL TABLET & PHONE (≤768px) ==================== */
+
+@media (max-width: 768px) {
+
+  /* Show mobile panel tabs */
+  .mobile-panel-tabs {
+    display: flex;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .mobile-panel-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+  }
+
+  .mobile-panel-tab.active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+  }
+
+  /* Stack the split container */
+  .split-container {
+    flex-direction: column;
+  }
+
+  /* Chat panel takes full width, toggleable */
+  .chat-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-right: none;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .chat-panel.mobile-hidden {
+    display: none;
+  }
+
+  .chat-panel.mobile-active {
+    display: flex;
+    flex: 1;
+  }
+
+  /* Preview panel takes full area, toggleable */
+  .preview-panel.mobile-hidden {
+    display: none;
+  }
+
+  .preview-panel.mobile-active {
+    display: flex;
+    flex: 1;
+  }
+
+  /* Top bar adjustments */
+  .top-bar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .top-bar-tab {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* Hide device toggles on small screens */
+  .device-toggles {
+    display: none;
+  }
+
+  /* Chat messages padding */
+  .chat-messages {
+    padding: 16px;
+  }
+
+  /* Chat input adjustments */
+  .chat-input-container {
+    padding: 12px;
+  }
+
+  /* Welcome screen adjustments */
+  .welcome-screen {
+    padding: 24px;
+  }
+
+  .welcome-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .welcome-title {
+    font-size: 22px;
+  }
+
+  .welcome-subtitle {
+    font-size: 13px;
+  }
+
+  .welcome-suggestions {
+    max-width: 100%;
+  }
+
+  /* Preview content */
+  .preview-content {
+    padding: 8px;
+  }
+
+  .preview-frame.tablet,
+  .preview-frame.mobile {
+    width: 100%;
+    border: none !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Status bar compact */
+  .status-bar {
+    padding: 0 12px;
+    font-size: 10px;
+    height: 32px;
+  }
+
+  /* Code view */
+  .code-view {
+    padding: 8px;
+  }
+
+  .code-view pre {
+    padding: 12px;
+  }
+
+  .code-view code {
+    font-size: 11px;
+  }
+
+  /* Toast position */
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* ==================== RESPONSIVE — PHONE (≤480px) ==================== */
+
+@media (max-width: 480px) {
+
+  /* Make sidebar full-width on phone */
+  .sidebar {
+    width: 100vw;
+    min-width: 100vw;
+  }
+
+  /* Top bar even more compact */
+  .top-bar {
+    height: 46px;
+    min-height: 46px;
+    padding: 0 8px;
+  }
+
+  .top-bar-tabs {
+    padding: 2px;
+  }
+
+  .top-bar-tab {
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .top-bar-left {
+    gap: 8px;
+  }
+
+  .top-bar-right {
+    gap: 4px;
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Chat messages */
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-content {
+    font-size: 13px;
+  }
+
+  .message-role {
+    font-size: 11px;
+  }
+
+  /* Chat input */
+  .chat-textarea {
+    font-size: 13px;
+    padding: 10px 12px;
+    min-height: 40px;
+  }
+
+  .chat-send-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .chat-action-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Status bar — hide non-essential info */
+  .status-bar {
+    height: 28px;
+    font-size: 9px;
   }
 }
 
@@ -1280,7 +1588,7 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
-.welcome-title {
+.auth-card .welcome-title {
   font-size: 32px;
   font-weight: 800;
   color: white;
@@ -1288,10 +1596,11 @@ body {
   letter-spacing: -0.02em;
 }
 
-.welcome-subtitle {
+.auth-card .welcome-subtitle {
   font-size: 15px;
   color: var(--text-secondary);
   line-height: 1.5;
+  max-width: none;
 }
 
 .auth-form {
@@ -1449,6 +1758,8 @@ body {
   text-decoration: underline;
 }
 
+/* ==================== AUTH PAGE RESPONSIVE ==================== */
+
 @media (max-width: 1280px) {
   .landing-left {
     padding: 60px 80px;
@@ -1470,18 +1781,78 @@ body {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .landing-right {
+    padding: 20px;
+  }
+
   .auth-card {
-    padding: 40px 24px;
+    padding: 40px 28px;
+    border-radius: 24px;
+    max-width: 100%;
+  }
+
+  .auth-header {
+    margin-bottom: 32px;
+  }
+
+  .auth-welcome-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  .auth-form {
+    gap: 20px;
+  }
+
+  .auth-input-wrapper input {
+    padding: 14px 14px 14px 46px;
+    font-size: 14px;
+  }
+
+  .auth-divider {
+    margin: 24px 0;
+  }
+
+  .auth-footer {
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-right {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .auth-card {
+    padding: 36px 20px;
     border-radius: 0;
     border: none;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    max-width: 100%;
   }
 
   .welcome-title {
-    font-size: 28px;
+    font-size: 26px;
+  }
+
+  .welcome-subtitle {
+    font-size: 13px;
+  }
+
+  .auth-submit-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  .social-btn {
+    padding: 12px;
+    font-size: 14px;
   }
 }
