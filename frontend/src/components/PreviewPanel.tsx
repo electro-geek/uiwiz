@@ -200,7 +200,58 @@ const SplashContent = () => {
 };
 
 
+// Helper to extract imports from code
+const extractDependencies = (files: Record<string, { code: string }>) => {
+    const dependencies: Record<string, string> = {
+        'lucide-react': 'latest',
+        'framer-motion': 'latest',
+        'clsx': 'latest',
+        'recharts': 'latest',
+        'date-fns': 'latest',
+        'react-router-dom': 'latest',
+        're-resizable': 'latest',
+        'react-is': 'latest',
+        'prop-types': 'latest',
+        'tailwind-merge': 'latest',
+        'axios': 'latest',
+        'class-variance-authority': 'latest',
+        '@radix-ui/react-slot': 'latest',
+        '@radix-ui/react-avatar': 'latest',
+        '@radix-ui/react-dialog': 'latest',
+        '@radix-ui/react-dropdown-menu': 'latest',
+        '@radix-ui/react-label': 'latest',
+        '@radix-ui/react-separator': 'latest',
+        '@radix-ui/react-tooltip': 'latest',
+        '@radix-ui/react-switch': 'latest',
+        '@radix-ui/react-checkbox': 'latest',
+        '@radix-ui/react-tabs': 'latest',
+    };
+
+    const importRegex = /import\s+(?:(?:[\w*\s{},]*)\s+from\s+)?['"]([^'"]+)['"]/g;
+
+    Object.values(files).forEach(file => {
+        let match;
+        while ((match = importRegex.exec(file.code)) !== null) {
+            const pkg = match[1];
+            // Skip relative imports and internal modules
+            if (!pkg.startsWith('.') && !pkg.startsWith('/')) {
+                // Handle scoped packages (e.g. @radix-ui/react-slot) vs normal (react)
+                const parts = pkg.split('/');
+                const pkgName = pkg.startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0];
+
+                if (!dependencies[pkgName]) {
+                    dependencies[pkgName] = 'latest';
+                }
+            }
+        }
+    });
+
+    return dependencies;
+};
+
 export default function PreviewPanel({ code, deviceMode, isGenerating }: PreviewPanelProps) {
+    // ... [existing parsing logic remains the same] ...
+
     if (!code && !isGenerating) {
         return (
             <div className="preview-content">
@@ -211,13 +262,14 @@ export default function PreviewPanel({ code, deviceMode, isGenerating }: Preview
         );
     }
 
-    // Attempt to parse multi-file structure
-    let files: Record<string, { code: string; active?: boolean }> = {};
+    // ... logic for parsing files (lines 214-264 in original) ...
+    // Note: I am rewriting the component to include the dependency extraction logic correctly.
+
+    // Re-implement parsing logic here to ensure 'files' is available for extractDependencies
+    let filesState: Record<string, { code: string; active?: boolean }> = {};
 
     if (code) {
         let jsonStr = code.trim();
-
-        // Try to locate JSON if it's wrapped in text
         if (!jsonStr.startsWith('{')) {
             const firstBrace = jsonStr.indexOf('{');
             const lastBrace = jsonStr.lastIndexOf('}');
@@ -225,43 +277,29 @@ export default function PreviewPanel({ code, deviceMode, isGenerating }: Preview
                 jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
             }
         }
-
         try {
             const parsed = JSON.parse(jsonStr);
             if (typeof parsed === 'object' && parsed !== null) {
-                // It's a multi-file object
                 Object.entries(parsed).forEach(([path, content]) => {
-                    files[path] = { code: content as string };
+                    filesState[path] = { code: content as string };
                 });
-
-                // Ensure /App.tsx is present and active
-                if (files['/App.tsx']) {
-                    files['/App.tsx'].active = true;
-                } else if (Object.keys(files).length > 0) {
-                    // Fallback to the first file if /App.tsx is missing
-                    const firstFile = Object.keys(files)[0];
-                    files[firstFile].active = true;
+                if (filesState['/App.tsx']) {
+                    filesState['/App.tsx'].active = true;
+                } else if (Object.keys(filesState).length > 0) {
+                    filesState[Object.keys(filesState)[0]].active = true;
                 }
             } else {
                 throw new Error('Not an object');
             }
         } catch (e) {
-            // Fallback to single-file mode (especially during streaming)
-            files = {
-                '/App.tsx': {
-                    code: code || DEFAULT_CODE,
-                    active: true,
-                },
-            };
+            filesState = { '/App.tsx': { code: code || DEFAULT_CODE, active: true } };
         }
     } else {
-        files = {
-            '/App.tsx': {
-                code: DEFAULT_CODE,
-                active: true,
-            }
-        };
+        filesState = { '/App.tsx': { code: DEFAULT_CODE, active: true } };
     }
+
+    // Recalculate dependencies with the parsed files
+    const calculatedDependencies = extractDependencies(filesState);
 
     return (
         <div className="preview-content">
@@ -274,32 +312,9 @@ export default function PreviewPanel({ code, deviceMode, isGenerating }: Preview
                 )}
                 <SandpackProvider
                     template="react-ts"
-                    files={files}
+                    files={filesState}
                     customSetup={{
-                        dependencies: {
-                            'lucide-react': 'latest',
-                            'framer-motion': 'latest',
-                            'clsx': 'latest',
-                            'recharts': 'latest',
-                            'date-fns': 'latest',
-                            'react-router-dom': 'latest',
-                            're-resizable': 'latest',
-                            'react-is': 'latest',
-                            'prop-types': 'latest',
-                            'tailwind-merge': 'latest',
-                            'axios': 'latest',
-                            'class-variance-authority': 'latest',
-                            '@radix-ui/react-slot': 'latest',
-                            '@radix-ui/react-avatar': 'latest',
-                            '@radix-ui/react-dialog': 'latest',
-                            '@radix-ui/react-dropdown-menu': 'latest',
-                            '@radix-ui/react-label': 'latest',
-                            '@radix-ui/react-separator': 'latest',
-                            '@radix-ui/react-tooltip': 'latest',
-                            '@radix-ui/react-switch': 'latest',
-                            '@radix-ui/react-checkbox': 'latest',
-                            '@radix-ui/react-tabs': 'latest',
-                        },
+                        dependencies: calculatedDependencies,
                     }}
                     options={{
                         externalResources: [
