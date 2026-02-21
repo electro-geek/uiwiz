@@ -128,6 +128,20 @@ export default function App() {
     }
   };
 
+  // Automatically show API key modal if missing after creator popup is closed
+  useEffect(() => {
+    if (isAuthenticated && user && !user.gemini_api_key && !isCreatorPopupOpen && !isApiKeyModalOpen) {
+      const sessionSeen = sessionStorage.getItem('session_seen_creator');
+      if (sessionSeen) {
+        const timer = setTimeout(() => {
+          setApiKeyAlertMode(true);
+          setIsApiKeyModalOpen(true);
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isAuthenticated, user, isCreatorPopupOpen, isApiKeyModalOpen]);
+
   const loadSessions = async () => {
     try {
       const data = await getSessions();
@@ -452,16 +466,7 @@ export default function App() {
 
       <CreatorPopup
         isOpen={isCreatorPopupOpen}
-        onClose={() => {
-          setIsCreatorPopupOpen(false);
-          // Chain to API key modal if they don't have one yet
-          if (!user?.gemini_api_key) {
-            setTimeout(() => {
-              setApiKeyAlertMode(true);
-              setIsApiKeyModalOpen(true);
-            }, 300);
-          }
-        }}
+        onClose={() => setIsCreatorPopupOpen(false)}
       />
 
       <ConfirmModal
