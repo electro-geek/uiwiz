@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AlertCircle, X, Save, Trash2 } from 'lucide-react';
 import type { UserProfile } from '../lib/api';
 
@@ -10,7 +10,7 @@ interface ApiKeyModalProps {
   onSaved: () => void;
   user: UserProfile | null;
   hasExistingKey: boolean;
-  saveApiKey: (key: string) => Promise<void>;
+  saveApiKey: (key: string) => Promise<void | UserProfile>;
   deleteApiKey: () => Promise<void>;
 }
 
