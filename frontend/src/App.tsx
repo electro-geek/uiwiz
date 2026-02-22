@@ -10,6 +10,7 @@ import StatusBar from './components/StatusBar';
 import { LoginPage, SignupPage } from './components/AuthPages';
 import ConfirmModal from './components/ConfirmModal';
 import CreatorPopup from './components/CreatorPopup';
+import ApiKeyModal from './components/ApiKeyModal';
 import {
   generateCodeStream,
   checkHealth,
@@ -17,6 +18,8 @@ import {
   createSession,
   getSessionDetail,
   getProfile,
+  saveApiKey,
+  deleteApiKey,
   deleteSession as apiDeleteSession,
   logout as apiLogout
 } from './lib/api';
@@ -83,6 +86,7 @@ export default function App() {
     sessionId: null
   });
   const [isCreatorPopupOpen, setIsCreatorPopupOpen] = useState(false);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<'chat' | 'preview'>('chat');
   const codeAccumulatorRef = useRef('');
@@ -106,7 +110,7 @@ export default function App() {
       loadSessions();
       loadProfile();
 
-      // Show creator popup once per session if not already shown
+      // Show creator popup once per session if not already shown (after API key if needed)
       const sessionSeen = sessionStorage.getItem('session_seen_creator');
       if (!sessionSeen) {
         setTimeout(() => setIsCreatorPopupOpen(true), 1200);
@@ -119,6 +123,13 @@ export default function App() {
     try {
       const profile = await getProfile();
       setUser(profile);
+      // If user has no API key, show API key modal (e.g. new signup or never set)
+      if (!profile.has_api_key) {
+        setIsApiKeyModalOpen(true);
+      }
+      // Refresh connection status when authenticated
+      const res = await checkHealth();
+      setIsConnected(res.gemini_configured);
     } catch (err) {
       console.error('Failed to load profile', err);
     }
@@ -228,6 +239,10 @@ export default function App() {
   const handleSend = useCallback(
     async (prompt: string, image?: string) => {
       if (!currentSession) return;
+      if (!user?.has_api_key) {
+        setIsApiKeyModalOpen(true);
+        return;
+      }
 
       // Add user message locally for instant feedback
       const userMsg: ChatMessage = {
@@ -264,6 +279,9 @@ export default function App() {
             const lowerError = error.toLowerCase();
             if (lowerError.includes('limit') || lowerError.includes('429')) {
               setIsRateLimitModalOpen(true);
+            } else if (lowerError.includes('api key') && lowerError.includes('settings')) {
+              setIsApiKeyModalOpen(true);
+              showToast(error, 'error');
             } else {
               showToast(error, 'error');
             }
@@ -274,7 +292,7 @@ export default function App() {
         showToast(error.message || 'Error generating code', 'error');
       }
     },
-    [currentSession, currentCode, handleSelectSession]
+    [currentSession, currentCode, handleSelectSession, user?.has_api_key]
   );
 
   const handleCopy = useCallback(() => {
@@ -339,6 +357,10 @@ export default function App() {
         user={user}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        onOpenApiKeySettings={() => {
+          setIsApiKeyModalOpen(true);
+          setIsSidebarOpen(false);
+        }}
       />
 
       <div className="main-content">
@@ -431,6 +453,20 @@ export default function App() {
         isDanger={true}
         onConfirm={confirmDeleteSession}
         onCancel={() => setDeleteConfirm({ isOpen: false, sessionId: null })}
+      />
+
+      <ApiKeyModal
+        isOpen={isApiKeyModalOpen}
+        onClose={() => setIsApiKeyModalOpen(false)}
+        onSaved={async () => {
+          await loadProfile();
+          const res = await checkHealth();
+          setIsConnected(res.gemini_configured);
+        }}
+        user={user}
+        hasExistingKey={user?.has_api_key ?? false}
+        saveApiKey={saveApiKey}
+        deleteApiKey={deleteApiKey}
       />
     </div>
   );

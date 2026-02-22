@@ -54,6 +54,7 @@ export interface UserProfile {
   username?: string;
   email?: string;
   avatar_url?: string | null;
+  has_api_key?: boolean;
 }
 
 export const login = async (username: string, password: string) => {
@@ -104,9 +105,18 @@ export const getProfile = async (): Promise<UserProfile> => {
   return response.data;
 };
 
-export const updateProfile = async (data: UserProfile): Promise<UserProfile> => {
+export const updateProfile = async (data: Partial<UserProfile>): Promise<UserProfile> => {
   const response = await api.post('/profile/', data);
   return response.data;
+};
+
+export const saveApiKey = async (geminiApiKey: string): Promise<UserProfile> => {
+  const response = await api.post('/profile/', { gemini_api_key: geminiApiKey });
+  return response.data;
+};
+
+export const deleteApiKey = async (): Promise<void> => {
+  await api.post('/profile/', { delete_api_key: true });
 };
 
 export const generateCodeStream = async (

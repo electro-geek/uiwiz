@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Wand2, LogOut, Trash2, X } from 'lucide-react';
+import { Plus, MessageSquare, Wand2, LogOut, Trash2, X, Key } from 'lucide-react';
 import type { ChatSession, UserProfile } from '../lib/api';
 
 interface SidebarProps {
@@ -11,6 +11,7 @@ interface SidebarProps {
     user: UserProfile | null;
     isOpen?: boolean;
     onClose?: () => void;
+    onOpenApiKeySettings?: () => void;
 }
 
 export default function Sidebar({
@@ -22,7 +23,8 @@ export default function Sidebar({
     onLogout,
     user,
     isOpen,
-    onClose
+    onClose,
+    onOpenApiKeySettings
 }: SidebarProps) {
     const getInitials = (name: string) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
@@ -164,7 +166,16 @@ export default function Sidebar({
                         </div>
                         <div style={{ fontSize: '11px', color: '#555' }}>Pro Plan</div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {onOpenApiKeySettings && (
+                            <button
+                                onClick={onOpenApiKeySettings}
+                                style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
+                                title="API key settings"
+                            >
+                                <Key size={16} color="#444" className="hover-white" />
+                            </button>
+                        )}
                         <button
                             onClick={onLogout}
                             style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
