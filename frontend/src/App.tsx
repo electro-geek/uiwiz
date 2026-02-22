@@ -161,7 +161,7 @@ export default function App() {
     }
   };
 
-  const handleSelectSession = async (id: number) => {
+  const handleSelectSession = useCallback(async (id: number) => {
     try {
       const data = await getSessionDetail(id);
       setCurrentSession(data);
@@ -189,7 +189,7 @@ export default function App() {
     } catch (err) {
       showToast('Failed to load session history', 'error');
     }
-  };
+  }, []);
 
   const handleNewChat = async () => {
     try {
@@ -253,8 +253,8 @@ export default function App() {
     async (prompt: string, image?: string) => {
       if (!currentSession) return;
 
-      // Check if API key is missing using the robust isConnected flag
-      if (!isConnected) {
+      // Check if API key is missing (only block if we're certain)
+      if (user && !user.gemini_api_key && !isConnected) {
         setApiKeyAlertMode(true);
         setIsApiKeyModalOpen(true);
         return;
@@ -292,9 +292,14 @@ export default function App() {
           },
           (error) => {
             setIsGenerating(false);
-            if (error.toLowerCase().includes('limit') || error.includes('429')) {
+            const lowerError = error.toLowerCase();
+            if (lowerError.includes('limit') || lowerError.includes('429')) {
               setIsRateLimitModalOpen(true);
-            } else if (error.toLowerCase().includes('api key') || error.includes('401')) {
+            } else if (
+              lowerError.includes('api key not found') ||
+              lowerError.includes('invalid') ||
+              error.includes('401')
+            ) {
               setApiKeyAlertMode(true);
               setIsApiKeyModalOpen(true);
             } else {
@@ -307,7 +312,7 @@ export default function App() {
         showToast(error.message || 'Error generating code', 'error');
       }
     },
-    [currentSession, currentCode, user]
+    [currentSession, currentCode, user, isConnected, handleSelectSession]
   );
 
   const handleCopy = useCallback(() => {

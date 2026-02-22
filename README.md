@@ -1,4 +1,4 @@
-# UIWiz — AI-Powered UI Generator
+# UIWiz
 
 **UIWiz** is an AI-native UI development platform that turns natural language into production-ready React components. Describe what you want in plain English, and get real React + Tailwind code with a live preview—no design tools or handoff required.
 
