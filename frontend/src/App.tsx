@@ -8,7 +8,6 @@ import PreviewPanel from './components/PreviewPanel';
 import CodeView from './components/CodeView';
 import StatusBar from './components/StatusBar';
 import { LoginPage, SignupPage } from './components/AuthPages';
-import ApiKeyModal from './components/ApiKeyModal';
 import ConfirmModal from './components/ConfirmModal';
 import CreatorPopup from './components/CreatorPopup';
 import {
@@ -78,8 +77,6 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [apiKeyAlertMode, setApiKeyAlertMode] = useState(false);
   const [isRateLimitModalOpen, setIsRateLimitModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; sessionId: number | null }>({
     isOpen: false,
@@ -89,7 +86,6 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<'chat' | 'preview'>('chat');
   const codeAccumulatorRef = useRef('');
-  const hasCheckedApiKeyRef = useRef(false);
 
   // Authentication check on mount
   useEffect(() => {
@@ -123,33 +119,10 @@ export default function App() {
     try {
       const profile = await getProfile();
       setUser(profile);
-      // Only set isConnected to true when profile has a key; never set to false here,
-      // so we don't overwrite the health-check state when the API doesn't return the key.
-      if (profile.gemini_api_key) {
-        setIsConnected(true);
-      }
     } catch (err) {
       console.error('Failed to load profile', err);
     }
   };
-
-  // Automatically show API key modal if missing after creator popup is closed
-  useEffect(() => {
-    // Both occasions: Signup and Login (including mount with existing token) 
-    // are covered by this check when the user profile is first loaded.
-    if (isAuthenticated && user && !isCreatorPopupOpen && !isApiKeyModalOpen && !hasCheckedApiKeyRef.current) {
-      if (!user.gemini_api_key) {
-        const timer = setTimeout(() => {
-          setApiKeyAlertMode(true);
-          setIsApiKeyModalOpen(true);
-          hasCheckedApiKeyRef.current = true; // Only prompt once per session load
-        }, 400);
-        return () => clearTimeout(timer);
-      } else {
-        hasCheckedApiKeyRef.current = true; // Key exists, no need to prompt
-      }
-    }
-  }, [isAuthenticated, user, isCreatorPopupOpen, isApiKeyModalOpen]);
 
   const loadSessions = async () => {
     try {
@@ -213,7 +186,6 @@ export default function App() {
     setCurrentSession(null);
     setSessions([]);
     setUser(null);
-    hasCheckedApiKeyRef.current = false;
   };
 
   const handleDeleteSession = (id: number, e: React.MouseEvent) => {
@@ -257,13 +229,6 @@ export default function App() {
     async (prompt: string, image?: string) => {
       if (!currentSession) return;
 
-      // Block send only when we know Gemini is not configured (use isConnected as source of truth).
-      if (!isConnected) {
-        setApiKeyAlertMode(true);
-        setIsApiKeyModalOpen(true);
-        return;
-      }
-
       // Add user message locally for instant feedback
       const userMsg: ChatMessage = {
         id: generateId(),
@@ -299,13 +264,6 @@ export default function App() {
             const lowerError = error.toLowerCase();
             if (lowerError.includes('limit') || lowerError.includes('429')) {
               setIsRateLimitModalOpen(true);
-            } else if (
-              lowerError.includes('api key not found') ||
-              lowerError.includes('invalid') ||
-              error.includes('401')
-            ) {
-              setApiKeyAlertMode(true);
-              setIsApiKeyModalOpen(true);
             } else {
               showToast(error, 'error');
             }
@@ -316,7 +274,7 @@ export default function App() {
         showToast(error.message || 'Error generating code', 'error');
       }
     },
-    [currentSession, currentCode, isConnected, handleSelectSession]
+    [currentSession, currentCode, handleSelectSession]
   );
 
   const handleCopy = useCallback(() => {
@@ -378,10 +336,6 @@ export default function App() {
         }}
         onDeleteSession={handleDeleteSession}
         onLogout={handleLogout}
-        onSettingsClick={() => {
-          setApiKeyAlertMode(false);
-          setIsApiKeyModalOpen(true);
-        }}
         user={user}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -454,26 +408,10 @@ export default function App() {
         </div>
       )}
 
-      <ApiKeyModal
-        isOpen={isApiKeyModalOpen}
-        alertMode={apiKeyAlertMode}
-        onClose={() => {
-          setIsApiKeyModalOpen(false);
-          setApiKeyAlertMode(false);
-        }}
-        onSuccess={() => {
-          setApiKeyAlertMode(false);
-          checkHealth()
-            .then((res) => setIsConnected(res.gemini_configured))
-            .catch(() => setIsConnected(false));
-          loadProfile(); // Refresh profile to get the new key
-        }}
-      />
-
       <ConfirmModal
         isOpen={isRateLimitModalOpen}
         title="Rate Limit Exceeded"
-        message="Your Gemini API key has reached its usage limit or the service is overloaded. Please try again in a few minutes or provide a different API key in settings."
+        message="The service has reached its usage limit or is overloaded. Please try again in a few minutes."
         confirmLabel="Close"
         onConfirm={() => setIsRateLimitModalOpen(false)}
         onCancel={() => setIsRateLimitModalOpen(false)}

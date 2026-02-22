@@ -11,7 +11,7 @@ export default function StatusBar({ isGenerating, isConnected, currentCode }: St
                 <div className="status-indicator">
                     <span className={`status-dot ${isGenerating ? 'loading' : isConnected ? '' : 'error'}`} />
                     <span style={{ color: isGenerating ? 'var(--text-secondary)' : isConnected ? '#555' : 'var(--error)' }}>
-                        {isGenerating ? 'Generating...' : isConnected ? 'Connected to Gemini' : 'API Key Required'}
+                        {isGenerating ? 'Generating...' : isConnected ? 'Connected to Gemini' : 'Service unavailable'}
                     </span>
                 </div>
                 {isConnected && !isGenerating && (

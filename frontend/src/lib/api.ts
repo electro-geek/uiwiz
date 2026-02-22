@@ -51,7 +51,6 @@ export interface ChatSession {
 }
 
 export interface UserProfile {
-  gemini_api_key: string | null;
   username?: string;
   email?: string;
   avatar_url?: string | null;

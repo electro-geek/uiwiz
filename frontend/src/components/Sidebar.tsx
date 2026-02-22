@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Settings, Wand2, LogOut, Trash2, X } from 'lucide-react';
+import { Plus, MessageSquare, Wand2, LogOut, Trash2, X } from 'lucide-react';
 import type { ChatSession, UserProfile } from '../lib/api';
 
 interface SidebarProps {
@@ -8,7 +8,6 @@ interface SidebarProps {
     onSelectSession: (id: number) => void;
     onDeleteSession: (id: number, e: React.MouseEvent) => void;
     onLogout: () => void;
-    onSettingsClick: () => void;
     user: UserProfile | null;
     isOpen?: boolean;
     onClose?: () => void;
@@ -21,7 +20,6 @@ export default function Sidebar({
     onSelectSession,
     onDeleteSession,
     onLogout,
-    onSettingsClick,
     user,
     isOpen,
     onClose
@@ -167,13 +165,6 @@ export default function Sidebar({
                         <div style={{ fontSize: '11px', color: '#555' }}>Pro Plan</div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                            onClick={onSettingsClick}
-                            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
-                            title="API Settings"
-                        >
-                            <Settings size={16} color="#444" className="hover-white" />
-                        </button>
                         <button
                             onClick={onLogout}
                             style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}

@@ -105,7 +105,13 @@ export const LoginPage: React.FC<AuthProps> = ({ onSuccess }) => {
             await login(username, password);
             onSuccess();
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Invalid credentials');
+            const detail = err.response?.data?.detail;
+            const msg = Array.isArray(detail) ? detail[0] : detail;
+            if (!err.response) {
+                setError('Cannot reach server. Is the backend running at http://localhost:8000?');
+            } else {
+                setError(msg || 'Invalid credentials');
+            }
         } finally {
             setLoading(false);
         }
@@ -119,7 +125,12 @@ export const LoginPage: React.FC<AuthProps> = ({ onSuccess }) => {
             await googleLogin(idToken);
             onSuccess();
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Google sign-in failed');
+            const serverError = err.response?.data?.error;
+            if (!err.response) {
+                setError('Cannot reach server. Is the backend running at http://localhost:8000?');
+            } else {
+                setError(serverError || 'Google sign-in failed');
+            }
         } finally {
             setLoading(false);
         }
@@ -234,7 +245,12 @@ export const SignupPage: React.FC<AuthProps> = ({ onSuccess }) => {
             await googleLogin(idToken);
             onSuccess();
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Google sign-in failed');
+            const serverError = err.response?.data?.error;
+            if (!err.response) {
+                setError('Cannot reach server. Is the backend running at http://localhost:8000?');
+            } else {
+                setError(serverError || 'Google sign-in failed');
+            }
         } finally {
             setLoading(false);
         }
