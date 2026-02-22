@@ -123,7 +123,11 @@ export default function App() {
     try {
       const profile = await getProfile();
       setUser(profile);
-      setIsConnected(!!profile.gemini_api_key);
+      // Only set isConnected to true when profile has a key; never set to false here,
+      // so we don't overwrite the health-check state when the API doesn't return the key.
+      if (profile.gemini_api_key) {
+        setIsConnected(true);
+      }
     } catch (err) {
       console.error('Failed to load profile', err);
     }
@@ -253,8 +257,8 @@ export default function App() {
     async (prompt: string, image?: string) => {
       if (!currentSession) return;
 
-      // Check if API key is missing (only block if we're certain)
-      if (user && !user.gemini_api_key && !isConnected) {
+      // Block send only when we know Gemini is not configured (use isConnected as source of truth).
+      if (!isConnected) {
         setApiKeyAlertMode(true);
         setIsApiKeyModalOpen(true);
         return;
@@ -312,7 +316,7 @@ export default function App() {
         showToast(error.message || 'Error generating code', 'error');
       }
     },
-    [currentSession, currentCode, user, isConnected, handleSelectSession]
+    [currentSession, currentCode, isConnected, handleSelectSession]
   );
 
   const handleCopy = useCallback(() => {
