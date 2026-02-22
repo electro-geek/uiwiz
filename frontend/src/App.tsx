@@ -89,6 +89,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<'chat' | 'preview'>('chat');
   const codeAccumulatorRef = useRef('');
+  const hasCheckedApiKeyRef = useRef(false);
 
   // Authentication check on mount
   useEffect(() => {
@@ -130,14 +131,18 @@ export default function App() {
 
   // Automatically show API key modal if missing after creator popup is closed
   useEffect(() => {
-    if (isAuthenticated && user && !user.gemini_api_key && !isCreatorPopupOpen && !isApiKeyModalOpen) {
-      const sessionSeen = sessionStorage.getItem('session_seen_creator');
-      if (sessionSeen) {
+    // Both occasions: Signup and Login (including mount with existing token) 
+    // are covered by this check when the user profile is first loaded.
+    if (isAuthenticated && user && !isCreatorPopupOpen && !isApiKeyModalOpen && !hasCheckedApiKeyRef.current) {
+      if (!user.gemini_api_key) {
         const timer = setTimeout(() => {
           setApiKeyAlertMode(true);
           setIsApiKeyModalOpen(true);
+          hasCheckedApiKeyRef.current = true; // Only prompt once per session load
         }, 400);
         return () => clearTimeout(timer);
+      } else {
+        hasCheckedApiKeyRef.current = true; // Key exists, no need to prompt
       }
     }
   }, [isAuthenticated, user, isCreatorPopupOpen, isApiKeyModalOpen]);
@@ -203,6 +208,8 @@ export default function App() {
     setIsAuthenticated(false);
     setCurrentSession(null);
     setSessions([]);
+    setUser(null);
+    hasCheckedApiKeyRef.current = false;
   };
 
   const handleDeleteSession = (id: number, e: React.MouseEvent) => {
