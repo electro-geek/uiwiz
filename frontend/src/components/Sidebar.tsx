@@ -167,8 +167,20 @@ export default function Sidebar({
                         <div style={{ fontSize: '11px', color: '#555' }}>Pro Plan</div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <Settings size={16} color="#444" style={{ cursor: 'pointer' }} onClick={onSettingsClick} />
-                        <LogOut size={16} color="#444" style={{ cursor: 'pointer' }} onClick={onLogout} />
+                        <button
+                            onClick={onSettingsClick}
+                            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
+                            title="API Settings"
+                        >
+                            <Settings size={16} color="#444" className="hover-white" />
+                        </button>
+                        <button
+                            onClick={onLogout}
+                            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
+                            title="Logout"
+                        >
+                            <LogOut size={16} color="#444" className="hover-white" />
+                        </button>
                     </div>
                 </div>
             </div>

@@ -253,8 +253,8 @@ export default function App() {
     async (prompt: string, image?: string) => {
       if (!currentSession) return;
 
-      // Check if API key is missing
-      if (!user?.gemini_api_key) {
+      // Check if API key is missing using the robust isConnected flag
+      if (!isConnected) {
         setApiKeyAlertMode(true);
         setIsApiKeyModalOpen(true);
         return;

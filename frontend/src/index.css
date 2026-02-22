@@ -1856,3 +1856,7 @@ body {
     font-size: 14px;
   }
 }
+.hover-white:hover {
+  color: white !important;
+  transition: color var(--transition-fast);
+}
