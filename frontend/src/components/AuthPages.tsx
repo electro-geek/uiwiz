@@ -82,6 +82,22 @@ const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         </div>
                     </div>
                 </div>
+
+                <div className="peerlist-badge-wrapper">
+                    <span className="peerlist-badge-label">Featured on</span>
+                    <a
+                        href="https://peerlist.io/electrogeek/project/uiwiz"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="peerlist-badge-link"
+                    >
+                        <img
+                            src="https://peerlist.io/api/v1/projects/embed/PRJH9OBOODOARKDBMFG9JR7Q9RGM69?showUpvote=false&theme=dark"
+                            alt="UIWiz on Peerlist"
+                            className="peerlist-badge-img"
+                        />
+                    </a>
+                </div>
             </div>
 
             <div className="landing-right">

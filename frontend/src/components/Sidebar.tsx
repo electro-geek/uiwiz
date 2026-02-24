@@ -130,10 +130,30 @@ export default function Sidebar({
                 </div>
             </div>
 
+            {/* Peerlist Launchpad Badge */}
+            <div style={{ padding: '0 16px 12px' }}>
+                <a
+                    href="https://peerlist.io/electrogeek/project/uiwiz"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="sidebar-peerlist-badge"
+                >
+                    <div className="sidebar-peerlist-icon">
+                        <Wand2 size={16} strokeWidth={2} color="#c8c8c8" />
+                    </div>
+                    <div className="sidebar-peerlist-text">
+                        <span className="sidebar-peerlist-live">Live on</span>
+                        <span className="sidebar-peerlist-name">Peerlist</span>
+                        <span className="sidebar-peerlist-divider">|</span>
+                        <span className="sidebar-peerlist-launchpad">Launchpad</span>
+                    </div>
+                </a>
+            </div>
+
             <div className="sidebar-footer" style={{
                 padding: '16px',
                 borderTop: '1px solid rgba(255,255,255,0.05)',
-                marginTop: 'auto'
+                marginTop: 0
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
                     <div style={{
