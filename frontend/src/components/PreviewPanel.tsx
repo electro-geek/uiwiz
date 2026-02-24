@@ -301,6 +301,28 @@ export default function PreviewPanel({ code, deviceMode, isGenerating }: Preview
     // Recalculate dependencies with the parsed files
     const calculatedDependencies = extractDependencies(filesState);
 
+    // Pin React 18 inside the sandbox to avoid conflicts with the host app (React 19).
+    // Also provide a clean index.tsx so Sandpack doesn't generate a conflicting one.
+    const sandpackFiles = {
+        '/index.tsx': {
+            code: `import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+}
+`,
+            hidden: true,
+        },
+        ...filesState,
+    };
+
     return (
         <div className="preview-content">
             <div className={`preview-frame ${deviceMode}`}>
@@ -312,9 +334,13 @@ export default function PreviewPanel({ code, deviceMode, isGenerating }: Preview
                 )}
                 <SandpackProvider
                     template="react-ts"
-                    files={filesState}
+                    files={sandpackFiles}
                     customSetup={{
-                        dependencies: calculatedDependencies,
+                        dependencies: {
+                            ...calculatedDependencies,
+                            'react': '18.3.1',
+                            'react-dom': '18.3.1',
+                        },
                     }}
                     options={{
                         externalResources: [
